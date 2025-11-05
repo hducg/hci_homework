@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>多媒体日记</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="diary-shell">
+    <header class="topbar" aria-label="日记工具栏">
+      <div>
+        <h1>我的多媒体日记</h1>
+        <div class="badge" id="mood-badge" aria-live="polite">
+          <span>😊</span> 今天的心情
+        </div>
+      </div>
+      <div class="topbar-controls">
+        <button type="button" id="export-html-btn">下载 HTML</button>
+        <button type="button" class="secondary-btn" id="clear-entry-btn">清空当前日记</button>
+        <button type="button" class="secondary-btn" id="delete-draft-btn" title="从浏览器删除本地草稿（不会删除你电脑上的下载文件）">删除本地草稿</button>
+        <button type="button" class="secondary-btn" id="toggle-emoji-btn" aria-expanded="false">表情面板</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="diary-app">
+        <aside class="card" aria-label="日记基本信息">
+          <div class="metadata-grid">
+            <div>
+              <label for="time">时间</label>
+              <input type="datetime-local" id="time">
+            </div>
+            <div class="inline">
+              <div>
+                <label for="weather">天气</label>
+                <select id="weather">
+                  <option value="sunny">☀️ 晴</option>
+                  <option value="cloudy">⛅ 多云</option>
+                  <option value="rainy">🌧️ 雨</option>
+                  <option value="snowy">🌨️ 雪</option>
+                  <option value="windy">💨 大风</option>
+                  <option value="foggy">🌫️ 雾</option>
+                </select>
+              </div>
+              <div>
+                <label for="mood">心情</label>
+                <select id="mood">
+                  <option value="happy">😊 开心</option>
+                  <option value="calm">😌 平静</option>
+                  <option value="tired">🥱 疲惫</option>
+                  <option value="sad">😔 难过</option>
+                  <option value="angry">😠 生气</option>
+                  <option value="excited">🤩 兴奋</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label for="location">地点</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="location" placeholder="记录发生地点" aria-describedby="location-helper">
+                <button type="button" id="geo-btn" class="secondary-btn" style="white-space: nowrap;">定位</button>
+              </div>
+              <small id="location-helper" style="display:block; margin-top:6px; color: var(--muted);">允许浏览器访问定位后自动填入。</small>
+            </div>
+            <div>
+              <label for="tags">标签</label>
+              <input type="text" id="tags" placeholder="例如：旅行, 朋友, 灵感">
+            </div>
+            <div class="status-bar" aria-live="polite">
+              <div>字数：<strong id="char-count">0</strong></div>
+              <div>图像：<strong id="image-count">0</strong> ｜ 音频：<strong id="audio-count">0</strong></div>
+              <div id="autosave-status">草稿未保存</div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="editor-shell" aria-label="日记编辑器">
+          <div class="card" aria-label="内容区域">
+            <div class="toolbar" role="toolbar" aria-label="插入工具">
+              <div class="emoji-panel-wrapper">
+                <button type="button" class="secondary-btn" id="emoji-trigger" aria-haspopup="true">😀 插入表情</button>
+                <div class="emoji-panel" id="emoji-panel" role="menu">
+                  <div class="emoji-search">
+                    <input type="search" id="emoji-search" placeholder="搜索 😊 / ai / 爱"> 
+                  </div>
+                  <div class="emoji-grid" id="emoji-grid"></div>
+                </div>
+              </div>
+
+              <button type="button" class="secondary-btn" id="insert-divider-btn">插入分隔线</button>
+
+              <label class="secondary-btn" style="display:inline-flex; align-items:center; gap:8px;">
+                上传图片
+                <input type="file" id="image-input" accept="image/*" multiple style="display:none;">
+              </label>
+
+              <label class="secondary-btn" style="display:inline-flex; align-items:center; gap:8px;">
+                上传音频
+                <input type="file" id="audio-input" accept="audio/*" style="display:none;">
+              </label>
+            </div>
+
+            <div id="diary-content" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="false" data-placeholder="写下今天的故事、感想与发现……"></div>
+            <div class="dropzone" id="image-dropzone" aria-label="拖放图片区域">拖拽图片到此区域，或点击上方按钮上传。</div>
+          </div>
+
+          <div class="card" aria-label="涂鸦画板">
+            <h2 class="h2-title">🎨 涂鸦</h2>
+            <div class="canvas-wrapper">
+              <canvas id="canvas" width="800" height="480" aria-label="画布"></canvas>
+              <div id="canvas-bounds-overlay"></div>
+            </div>
+            <div class="canvas-controls">
+              <label for="brush-color">颜色</label>
+              <input type="color" id="brush-color" value="#1f2937" />
+
+              <label for="brush-size">粗细</label>
+              <input type="range" id="brush-size" min="2" max="24" value="6" />
+              
+              <label for="canvas-size-select">画布范围</label>
+              <select id="canvas-size-select">
+                <option value="auto">自适应（满宽）</option>
+                <option value="320x200">小 (320×200)</option>
+                <option value="640x360">中 (640×360)</option>
+                <option value="800x480">大 (800×480)</option>
+              </select>
+
+              <label style="display:inline-flex; align-items:center; gap:8px;"><input type="checkbox" id="show-bounds" checked> 显示边界</label>
+
+              <button type="button" class="secondary-btn" id="canvas-clear-btn">清空画布</button>
+              <button type="button" id="insert-doodle-btn">插入涂鸦到日记</button>
+            </div>
+          </div>
+
+          <div class="card" aria-label="语音工具">
+            <h2 class="h2-title">🎤 语音</h2>
+            <div class="audio-controls">
+              <button type="button" id="record-btn">开始录音</button>
+              <span class="audio-status" id="audio-status">等待录音…</span>
+              <button type="button" class="secondary-btn" id="clear-audio-preview-btn" title="清空右侧预览音频（不影响正文）">清空预览</button>
+              <button type="button" class="secondary-btn" id="remove-audio-from-editor-btn" title="从正文移除所有音频附件">移除正文音频</button>
+            </div>
+            <div class="attachments-preview" id="audio-preview"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <button type="button" class="floating-save" id="quick-save-btn">保存当前草稿</button>
+  </div>
+
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

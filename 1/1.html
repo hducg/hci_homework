@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>时光日记 | 记录生活的每一刻</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1', // 柔和的靛蓝色
+                        secondary: '#ec4899', // 温暖的粉色
+                        accent: '#f59e0b', // 活力橙
+                        neutral: {
+                            50: '#fafafa',
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px rgba(0, 0, 0, 0.05)',
+                        'medium': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-balance {
+                text-wrap: balance;
+            }
+
+            .bg-texture {
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            }
+
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            .animate-slide-up {
+                animation: slideUp 0.3s ease-out;
+            }
+
+            .animate-pulse-soft {
+                animation: pulseSoft 2s infinite;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideUp {
+                from {
+                    transform: translateY(10px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes pulseSoft {
+                0%, 100% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.8;
+                }
+            }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-neutral-50 bg-texture text-neutral-800 min-h-screen">
+    <!-- 顶部导航栏 - 滚动时变化样式 -->
+    <header id="mainHeader" class="fixed top-0 left-0 right-0 z-40 transition-all duration-300 bg-primary/95 text-white shadow-medium">
+        <div class="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+            <h1 class="text-[clamp(1.2rem,3vw,1.8rem)] font-semibold flex items-center gap-2">
+                <i class="fa fa-book text-accent animate-pulse-soft"></i>
+                <span>时光日记</span>
+            </h1>
+            <div class="flex gap-2 md:gap-3 items-center">
+                <button id="newEntryBtn" class="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all">
+                    <i class="fa fa-plus-circle"></i>
+                    <span>新日记</span>
+                </button>
+                <button id="saveBtn" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white text-primary hover:bg-neutral-100 transition-all shadow-sm">
+                    <i class="fa fa-save"></i>
+                    <span class="hidden sm:inline">保存</span>
+                </button>
+                <button id="historyBtn" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary hover:bg-secondary/90 transition-all shadow-sm">
+                    <i class="fa fa-history"></i>
+                    <span class="hidden sm:inline">历史</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 pt-24 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- 左侧：日记列表 (大屏幕显示) -->
+        <div id="diaryList" class="hidden lg:block lg:col-span-4 bg-white rounded-2xl shadow-soft p-4 md:p-5 overflow-y-auto max-h-[calc(100vh-120px)] animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold flex items-center gap-2">
+                    <i class="fa fa-calendar-check-o text-primary"></i>
+                    日记列表
+                </h2>
+                <button id="newEntryBtnSide" class="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+                    <i class="fa fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="relative mb-4">
+                <input type="text" id="searchDiary" placeholder="搜索日记内容..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all">
+                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            </div>
+
+            <!-- 日期分组标题 -->
+            <div id="entriesContainer" class="space-y-4">
+                <!-- 日记条目将通过JS动态生成 -->
+                <div class="text-center text-neutral-500 py-12 animate-fade-in">
+                    <div class="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-pencil text-2xl text-neutral-300"></i>
+                    </div>
+                    <p class="text-neutral-400">开始记录你的第一篇日记吧</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：编辑区域 -->
+        <div class="lg:col-span-8 space-y-5 md:space-y-6 animate-slide-up">
+            <!-- 基本信息卡片 -->
+            <div class="bg-white rounded-2xl shadow-soft p-5 md:p-6 transition-all duration-300 hover:shadow-medium">
+                <h2 class="text-lg font-semibold mb-4 pb-2 border-b border-neutral-100 flex items-center gap-2">
+                    <i class="fa fa-info-circle text-primary"></i>
+                    基本信息
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">时间</label>
+                        <input type="datetime-local" id="time" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">地点</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="location" placeholder="输入地点或点击获取位置" class="flex-1 px-3.5 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+                            <button id="getLocationBtn" class="p-2.5 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-all">
+                                <i class="fa fa-map-marker text-primary"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">天气</label>
+                        <select id="weather" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none bg-white bg-[url('data:image/svg+xml;charset=US-ASCII,<svg width=\" 20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\">
+                            <path d=\"M7 10l5 5 5-5H7z\" fill=\"%23404040\" /></svg>')] bg-no-repeat bg-right 0.75rem center">
+                            <option>☀️ 晴</option>
+                            <option>⛅ 多云</option>
+                            <option>🌧️ 雨</option>
+                            <option>🌨️ 雪</option>
+                            <option>🌩️ 雷阵雨</option>
+                            <option>🌫️ 雾</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-neutral-700 mb-1.5">心情</label>
+                        <select id="mood" class="w-full px-3.5 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none bg-white bg-[url('data:image/svg+xml;charset=US-ASCII,<svg width=\" 20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\">
+                            <path d=\"M7 10l5 5 5-5H7z\" fill=\"%23404040\" /></svg>')] bg-no-repeat bg-right 0.75rem center">
+                            <option>😊 开心</option>
+                            <option>😌 平静</option>
+                            <option>😐 一般</option>
+                            <option>😔 难过</option>
+                            <option>😠 生气</option>
+                            <option>😲 惊讶</option>
+                            <option>😍 喜悦</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日记内容编辑区 -->
+            <div class="bg-white rounded-2xl shadow-soft p-5 md:p-6 transition-all duration-300 hover:shadow-medium">
+                <h2 class="text-lg font-semibold mb-4 pb-2 border-b border-neutral-100 flex items-center gap-2">
+                    <i class="fa fa-pencil-square-o text-primary"></i>
+                    日记内容
+                </h2>
+
+                <!-- 文本编辑工具栏 -->
+                <div class="flex flex-wrap gap-1.5 mb-4 p-2.5 bg-neutral-50 rounded-xl">
+                    <button onclick="formatText('bold')" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="加粗">
+                        <i class="fa fa-bold"></i>
+                    </button>
+                    <button onclick="formatText('italic')" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="斜体">
+                        <i class="fa fa-italic"></i>
+                    </button>
+                    <button onclick="formatText('underline')" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="下划线">
+                        <i class="fa fa-underline"></i>
+                    </button>
+                    <button onclick="formatText('insertUnorderedList')" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="无序列表">
+                        <i class="fa fa-list-ul"></i>
+                    </button>
+                    <button onclick="formatText('insertOrderedList')" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="有序列表">
+                        <i class="fa fa-list-ol"></i>
+                    </button>
+                    <span class="h-6 border-r border-neutral-200 mx-0.5"></span>
+
+                    <div class="relative">
+                        <button id="emojiBtn" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="表情">
+                            <i class="fa fa-smile-o"></i>
+                        </button>
+
+                        <!-- 表情选择面板 -->
+                        <div id="emojiPanel" class="absolute bottom-full left-0 mb-2 z-30 hidden bg-white border border-neutral-200 rounded-xl p-3 shadow-medium grid grid-cols-8 gap-2 w-max animate-fade-in">
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('😊')">😊</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('😍')">😍</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('😢')">😢</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('😂')">😂</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('👍')">👍</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('🎉')">🎉</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('💯')">💯</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('🔥')">🔥</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('🥰')">🥰</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('😎')">😎</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('🥳')">🥳</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('😴')">😴</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('🤔')">🤔</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('👏')">👏</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('🙏')">🙏</span>
+                            <span class="emoji text-xl cursor-pointer hover:scale-110 transition-transform" onclick="insertEmoji('💔')">💔</span>
+                        </div>
+                    </div>
+
+                    <label class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer" title="插入图片">
+                        <i class="fa fa-image"></i>
+                        <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" class="hidden">
+                    </label>
+                    <label class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all cursor-pointer" title="插入音频">
+                        <i class="fa fa-microphone"></i>
+                        <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" class="hidden">
+                    </label>
+                    <button id="doodleBtn" class="p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all" title="涂鸦">
+                        <i class="fa fa-paint-brush"></i>
+                    </button>
+                </div>
+
+                <!-- 内容编辑区 -->
+                <div id="diary-content" contenteditable="true" class="min-h-[220px] border border-neutral-200 rounded-xl p-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white placeholder-neutral-300" data-placeholder="在这里写下今天的故事..."></div>
+            </div>
+
+            <!-- 涂鸦区域 -->
+            <div id="doodleContainer" class="bg-white rounded-2xl shadow-soft p-5 md:p-6 transition-all duration-300 hover:shadow-medium hidden animate-fade-in">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-neutral-100">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i class="fa fa-paint-brush text-primary"></i>
+                        涂鸦板
+                    </h2>
+                    <button onclick="document.getElementById('doodleContainer').classList.add('hidden')" class="p-1.5 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 rounded-full transition-all">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <div class="flex items-center gap-2 bg-neutral-50 px-3 py-1.5 rounded-lg">
+                        <label class="text-sm font-medium">颜色:</label>
+                        <input type="color" id="doodleColor" value="#6366f1" class="w-8 h-8 p-0 border-0 rounded-full cursor-pointer overflow-hidden ring-1 ring-neutral-200">
+                    </div>
+                    <div class="flex items-center gap-2 bg-neutral-50 px-3 py-1.5 rounded-lg">
+                        <label class="text-sm font-medium">粗细:</label>
+                        <input type="range" id="doodleSize" min="1" max="15" value="3" class="w-28 accent-primary">
+                        <span id="sizeValue" class="text-sm font-medium">3px</span>
+                    </div>
+                    <button onclick="clearCanvas()" class="ml-auto flex items-center gap-1 bg-neutral-50 px-3 py-1.5 rounded-lg hover:bg-neutral-100 transition-all">
+                        <i class="fa fa-eraser"></i>
+                        <span class="text-sm">清空</span>
+                    </button>
+                </div>
+
+                <canvas id="canvas" width="100%" height="300" class="border border-neutral-200 rounded-xl cursor-crosshair bg-white shadow-inner"></canvas>
+                <div class="flex justify-end mt-4">
+                    <button onclick="insertDoodle(); document.getElementById('doodleContainer').classList.add('hidden')" class="px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5">
+                        <i class="fa fa-check"></i>
+                        <span>插入涂鸦</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 移动端底部操作栏 -->
+    <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 py-2 px-4 flex justify-around items-center z-30 shadow-medium">
+        <button id="newEntryBtnMobile" class="flex flex-col items-center justify-center p-2 text-neutral-700">
+            <i class="fa fa-plus-circle text-lg"></i>
+            <span class="text-xs mt-1">新建</span>
+        </button>
+        <button id="saveBtnMobile" class="flex flex-col items-center justify-center p-2 text-primary">
+            <i class="fa fa-save text-lg"></i>
+            <span class="text-xs mt-1">保存</span>
+        </button>
+        <button id="historyBtnMobile" class="flex flex-col items-center justify-center p-2 text-secondary">
+            <i class="fa fa-history text-lg"></i>
+            <span class="text-xs mt-1">历史</span>
+        </button>
+    </div>
+
+    <!-- 历史记录弹窗 -->
+    <div id="historyModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-hover w-full max-w-md max-h-[85vh] flex flex-col animate-slide-up">
+            <div class="p-4 border-b border-neutral-100 flex justify-between items-center">
+                <h3 class="font-semibold text-lg flex items-center gap-2">
+                    <i class="fa fa-history text-primary"></i>
+                    历史日记
+                </h3>
+                <button id="closeHistoryBtn" class="p-2 rounded-full hover:bg-neutral-50 transition-all">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="relative p-4 border-b border-neutral-100">
+                <input type="text" id="searchDiaryModal" placeholder="搜索日记..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all">
+                <i class="fa fa-search absolute left-7 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            </div>
+
+            <div id="modalEntriesContainer" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <!-- 与左侧列表内容同步 -->
+            </div>
+
+            <div class="p-4 border-t border-neutral-100">
+                <button id="closeHistoryBtn2" class="w-full py-2.5 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-all">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="toast" class="fixed bottom-20 right-4 bg-neutral-800 text-white px-4 py-2.5 rounded-xl shadow-medium transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 max-w-xs">
+        <i id="toastIcon" class="fa fa-check-circle text-green-400"></i>
+        <span id="toastMessage">操作成功</span>
+    </div>
+
+    <script>
+        // DOM元素引用
+        const diaryContent = document.getElementById('diary-content');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const doodleContainer = document.getElementById('doodleContainer');
+        const doodleBtn = document.getElementById('doodleBtn');
+        const emojiBtn = document.getElementById('emojiBtn');
+        const emojiPanel = document.getElementById('emojiPanel');
+        const doodleSize = document.getElementById('doodleSize');
+        const sizeValue = document.getElementById('sizeValue');
+        const doodleColor = document.getElementById('doodleColor');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveBtnMobile = document.getElementById('saveBtnMobile');
+        const historyBtn = document.getElementById('historyBtn');
+        const historyBtnMobile = document.getElementById('historyBtnMobile');
+        const historyModal = document.getElementById('historyModal');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+        const closeHistoryBtn2 = document.getElementById('closeHistoryBtn2');
+        const entriesContainer = document.getElementById('entriesContainer');
+        const modalEntriesContainer = document.getElementById('modalEntriesContainer');
+        const getLocationBtn = document.getElementById('getLocationBtn');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        const newEntryBtn = document.getElementById('newEntryBtn');
+        const newEntryBtnSide = document.getElementById('newEntryBtnSide');
+        const newEntryBtnMobile = document.getElementById('newEntryBtnMobile');
+        const searchDiary = document.getElementById('searchDiary');
+        const searchDiaryModal = document.getElementById('searchDiaryModal');
+        const mainHeader = document.getElementById('mainHeader');
+
+        // 初始化变量
+        let drawing = false;
+        let currentDiaryId = null;
+        const DIARY_STORAGE_KEY = 'multimedia_diaries';
+
+        // 初始化画布尺寸
+        function resizeCanvas() {
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            if (container) {
+                canvas.width = container.clientWidth;
+                // 保持画布高宽比，增强视觉体验
+                canvas.height = Math.min(300, container.clientWidth * 0.6);
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // 初始化页面
+        window.onload = () => {
+            // 设置当前时间
+            const now = new Date();
+            const local = now.toISOString().slice(0, 16);
+            document.getElementById('time').value = local;
+
+            // 初始化占位符效果
+            setupPlaceholder();
+
+            // 加载历史日记
+            loadDiaryEntries();
+
+            // 初始化画布
+            resizeCanvas();
+
+            // 滚动效果监听
+            window.addEventListener('scroll', handleScroll);
+
+            // 初始化表情按钮交互
+            initEmojiInteraction();
+        };
+
+        // 初始化表情按钮交互
+        function initEmojiInteraction() {
+            // 点击表情按钮切换面板显示/隐藏
+            emojiBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                emojiPanel.classList.toggle('hidden');
+                if (!emojiPanel.classList.contains('hidden')) {
+                    document.addEventListener('click', handleOutsideClick);
+                } else {
+                    document.removeEventListener('click', handleOutsideClick);
+                }
+            });
+
+            // 点击表情面板内部不关闭
+            emojiPanel.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // 鼠标离开表情面板时关闭
+            emojiPanel.addEventListener('mouseleave', () => {
+                emojiPanel.classList.add('hidden');
+                document.removeEventListener('click', handleOutsideClick);
+            });
+        }
+
+        // 处理点击外部关闭表情面板
+        function handleOutsideClick(e) {
+            if (!emojiBtn.contains(e.target) && !emojiPanel.contains(e.target)) {
+                emojiPanel.classList.add('hidden');
+                document.removeEventListener('click', handleOutsideClick);
+            }
+        }
+
+        // 处理滚动效果 - 导航栏样式变化
+        function handleScroll() {
+            if (window.scrollY > 10) {
+                mainHeader.classList.add('py-2', 'shadow-medium');
+                mainHeader.classList.remove('py-3', 'md:py-4', 'shadow-soft');
+            } else {
+                mainHeader.classList.remove('py-2', 'shadow-medium');
+                mainHeader.classList.add('py-3', 'md:py-4', 'shadow-soft');
+            }
+        }
+
+        // 文本格式化功能
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            diaryContent.focus();
+            // 添加操作反馈
+            addTemporaryStyle(diaryContent, 'bg-primary/5');
+        }
+
+        // 为元素添加临时样式反馈
+        function addTemporaryStyle(element, styleClass) {
+            element.classList.add(styleClass);
+            setTimeout(() => {
+                element.classList.remove(styleClass);
+            }, 300);
+        }
+
+        // 优化表情插入功能 - 确保插入到内容末尾
+        function insertEmoji(emoji) {
+            // 处理占位符文本
+            const placeholder = diaryContent.getAttribute('data-placeholder');
+            if (diaryContent.innerHTML.trim() === `<span class="text-neutral-300">${placeholder}</span>`) {
+                diaryContent.innerHTML = '';
+            }
+
+            // 创建表情文本节点
+            const textNode = document.createTextNode(emoji);
+
+            // 将表情添加到内容的最后
+            diaryContent.appendChild(textNode);
+
+            // 移动光标到表情之后
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // 确保日记内容区获得焦点
+            diaryContent.focus();
+
+            addTemporaryStyle(diaryContent, 'bg-primary/5');
+            // 插入表情后关闭面板
+            emojiPanel.classList.add('hidden');
+            document.removeEventListener('click', handleOutsideClick);
+        }
+
+        // 插入图片
+        function insertImage() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'preview-img my-3 max-w-full h-auto rounded-xl shadow-soft transition-all hover:shadow-medium';
+                img.onload = () => {
+                    // 处理占位符
+                    const placeholder = diaryContent.getAttribute('data-placeholder');
+                    if (diaryContent.innerHTML.trim() === `<span class="text-neutral-300">${placeholder}</span>`) {
+                        diaryContent.innerHTML = '';
+                    }
+
+                    // 添加淡入动画
+                    img.classList.add('opacity-0');
+                    diaryContent.appendChild(img);
+                    diaryContent.appendChild(document.createElement('br'));
+                    setTimeout(() => {
+                        img.classList.remove('opacity-0');
+                        img.classList.add('opacity-100', 'transition-opacity', 'duration-300');
+                    }, 10);
+                    diaryContent.focus();
+                    showToast('图片插入成功');
+                };
+            };
+            reader.readAsDataURL(file);
+            input.value = ''; // 重置输入
+        }
+
+        // 插入音频
+        function insertAudio() {
+            const input = document.getElementById('audioInput');
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const audioContainer = document.createElement('div');
+                audioContainer.className = 'my-3 p-3 bg-neutral-50 rounded-xl';
+
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.className = 'preview-audio w-full';
+                const source = document.createElement('source');
+                source.src = e.target.result;
+                source.type = file.type;
+                audio.appendChild(source);
+
+                const audioName = document.createElement('div');
+                audioName.className = 'text-xs text-neutral-500 mt-1.5';
+                audioName.textContent = `音频: ${file.name}`;
+
+                audioContainer.appendChild(audio);
+                audioContainer.appendChild(audioName);
+
+                // 处理占位符
+                const placeholder = diaryContent.getAttribute('data-placeholder');
+                if (diaryContent.innerHTML.trim() === `<span class="text-neutral-300">${placeholder}</span>`) {
+                    diaryContent.innerHTML = '';
+                }
+
+                // 添加淡入动画
+                audioContainer.classList.add('opacity-0');
+                diaryContent.appendChild(audioContainer);
+                diaryContent.appendChild(document.createElement('br'));
+                setTimeout(() => {
+                    audioContainer.classList.remove('opacity-0');
+                    audioContainer.classList.add('opacity-100', 'transition-opacity', 'duration-300');
+                }, 10);
+
+                diaryContent.focus();
+                showToast('音频插入成功');
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        // 涂鸦功能
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        });
+
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mouseout', () => drawing = false);
+
+        canvas.addEventListener('mousemove', draw);
+
+        // 触摸设备支持
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        });
+
+        canvas.addEventListener('touchend', () => drawing = false);
+        canvas.addEventListener('touchcancel', () => drawing = false);
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            draw({ clientX: touch.clientX, clientY: touch.clientY });
+        });
+
+        // 绘制函数
+        function draw(e) {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.strokeStyle = doodleColor.value;
+            ctx.lineWidth = doodleSize.value;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        // 涂鸦板控制
+        doodleBtn.addEventListener('click', () => {
+            doodleContainer.classList.toggle('hidden');
+            if (!doodleContainer.classList.contains('hidden')) {
+                resizeCanvas();
+                // 添加进入动画
+                doodleContainer.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    doodleContainer.classList.remove('scale-95', 'opacity-0');
+                    doodleContainer.classList.add('scale-100', 'opacity-100', 'transition-all', 'duration-300');
+                }, 10);
+            }
+        });
+
+        // 更新画笔大小显示
+        doodleSize.addEventListener('input', () => {
+            sizeValue.textContent = `${doodleSize.value}px`;
+            // 实时预览画笔大小
+            const previewDot = document.createElement('div');
+            previewDot.className = 'fixed pointer-events-none z-50 transition-opacity duration-300 opacity-0';
+            previewDot.style.width = `${doodleSize.value}px`;
+            previewDot.style.height = `${doodleSize.value}px`;
+            previewDot.style.backgroundColor = doodleColor.value;
+            previewDot.style.borderRadius = '50%';
+            previewDot.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(previewDot);
+
+            setTimeout(() => {
+                previewDot.classList.add('opacity-100');
+            }, 10);
+
+            setTimeout(() => {
+                previewDot.classList.remove('opacity-100');
+                previewDot.classList.add('opacity-0');
+                setTimeout(() => {
+                    document.body.removeChild(previewDot);
+                }, 300);
+            }, 800);
+        });
+
+        // 清空画布
+        function clearCanvas() {
+            // 添加淡出效果
+            const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            showToast('画布已清空');
+        }
+
+        // 插入涂鸦
+        function insertDoodle() {
+            const dataURL = canvas.toDataURL();
+            const img = document.createElement('img');
+            img.src = dataURL;
+            img.className = 'preview-img my-3 max-w-full h-auto rounded-xl shadow-soft transition-all hover:shadow-medium opacity-0';
+
+            // 处理占位符
+            const placeholder = diaryContent.getAttribute('data-placeholder');
+            if (diaryContent.innerHTML.trim() === `<span class="text-neutral-300">${placeholder}</span>`) {
+                diaryContent.innerHTML = '';
+            }
+
+            diaryContent.appendChild(img);
+            diaryContent.appendChild(document.createElement('br'));
+
+            // 淡入动画
+            setTimeout(() => {
+                img.classList.remove('opacity-0');
+                img.classList.add('opacity-100', 'transition-opacity', 'duration-300');
+            }, 10);
+
+            clearCanvas();
+            diaryContent.focus();
+            showToast('涂鸦插入成功');
+        }
+
+        // 获取位置信息
+        getLocationBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                showToast('您的浏览器不支持位置服务', 'error');
+                return;
+            }
+
+            showToast('正在获取位置...', 'loading');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // 这里可以调用逆地理编码API获取具体地址，这里简化处理
+                    document.getElementById('location').value = `纬度: ${position.coords.latitude.toFixed(2)}, 经度: ${position.coords.longitude.toFixed(2)}`;
+                    showToast('位置获取成功');
+                },
+                (error) => {
+                    showToast('位置获取失败，请手动输入', 'error');
+                    console.error(error);
+                }
+            );
+        });
+
+        // 保存日记
+        function saveDiary() {
+            const time = document.getElementById('time').value;
+            const weather = document.getElementById('weather').value;
+            const mood = document.getElementById('mood').value;
+            const location = document.getElementById('location').value;
+            const content = diaryContent.innerHTML;
+
+            if (!time) {
+                showToast('请选择时间', 'error');
+                document.getElementById('time').focus();
+                return;
+            }
+
+            if (!content.trim()) {
+                showToast('请填写日记内容', 'error');
+                diaryContent.focus();
+                return;
+            }
+
+            // 构建日记对象
+            const diary = {
+                id: currentDiaryId || Date.now().toString(),
+                time,
+                weather,
+                mood,
+                location,
+                content,
+                createdAt: new Date().toISOString()
+            };
+
+            // 从本地存储获取现有日记
+            const diaries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+
+            // 查找是否存在相同ID的日记（更新操作）
+            const index = diaries.findIndex(d => d.id === diary.id);
+            if (index > -1) {
+                diaries[index] = diary;
+            } else {
+                diaries.push(diary);
+            }
+
+            // 保存到本地存储（按时间排序）
+            diaries.sort((a, b) => new Date(b.time) - new Date(a.time));
+            localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(diaries));
+
+            // 更新UI
+            currentDiaryId = diary.id;
+            loadDiaryEntries();
+            showToast(currentDiaryId === diary.id && index > -1 ? '日记更新成功' : '日记保存成功');
+
+            // 保存按钮反馈动画
+            [saveBtn, saveBtnMobile].forEach(btn => {
+                btn.classList.add('scale-95');
+                setTimeout(() => btn.classList.remove('scale-95'), 200);
+            });
+        }
+
+        saveBtn.addEventListener('click', saveDiary);
+        saveBtnMobile.addEventListener('click', saveDiary);
+
+        // 加载日记列表 - 取消选中变色功能
+        function loadDiaryEntries(filterText = '') {
+            const diaries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+            entriesContainer.innerHTML = '';
+            modalEntriesContainer.innerHTML = '';
+
+            // 过滤日记
+            const filteredDiaries = filterText
+                ? diaries.filter(d =>
+                    d.content.toLowerCase().includes(filterText.toLowerCase()) ||
+                    d.location.toLowerCase().includes(filterText.toLowerCase())
+                )
+                : diaries;
+
+            if (filteredDiaries.length === 0) {
+                const emptyMsg = `
+                  <div class="text-center text-neutral-500 py-12 animate-fade-in">
+                    <div class="w-16 h-16 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <i class="fa fa-search text-2xl text-neutral-300"></i>
+                    </div>
+                    <p class="text-neutral-400">${filterText ? '没有找到匹配的日记' : '开始记录你的第一篇日记吧'}</p>
+                  </div>
+                `;
+                entriesContainer.innerHTML = emptyMsg;
+                modalEntriesContainer.innerHTML = emptyMsg;
+                return;
+            }
+
+            // 按日期分组
+            const groupedDiaries = {};
+            filteredDiaries.forEach(diary => {
+                const date = new Date(diary.time).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+                if (!groupedDiaries[date]) {
+                    groupedDiaries[date] = [];
+                }
+                groupedDiaries[date].push(diary);
+            });
+
+            // 生成日记条目
+            Object.entries(groupedDiaries).forEach(([date, dateDiaries]) => {
+                // 添加日期标题
+                const dateHeader = `
+                  <div class="text-xs uppercase font-semibold text-neutral-500 pt-2 pb-1">
+                    ${date}
+                  </div>
+                `;
+
+                entriesContainer.innerHTML += dateHeader;
+                modalEntriesContainer.innerHTML += dateHeader;
+
+                // 添加该日期下的所有日记
+                dateDiaries.forEach(diary => {
+                    const date = new Date(diary.time);
+                    const formattedTime = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    const plainText = diary.content.replace(/<[^>]*>?/gm, '');
+                    const previewText = plainText.length > 60 ? plainText.substring(0, 60) + '...' : plainText;
+
+                    const entryHtml = `
+                    <div class="p-3 border border-neutral-100 rounded-xl hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all group" data-id="${diary.id}">
+                      <div class="flex justify-between items-start mb-1.5">
+                        <div class="font-medium text-neutral-800">${formattedTime}</div>
+                        <div class="flex gap-1.5">
+                          <span class="text-sm">${diary.mood}</span>
+                          <span class="text-sm">${diary.weather}</span>
+                        </div>
+                      </div>
+                      <div class="text-sm text-neutral-600 truncate mb-2">${diary.location || '无地点信息'}</div>
+                      <div class="text-xs text-neutral-500 line-clamp-2">${previewText}</div>
+                      <div class="absolute inset-0 bg-primary/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                    </div>
+                  `;
+
+                    entriesContainer.innerHTML += entryHtml;
+                    modalEntriesContainer.innerHTML += entryHtml;
+                });
+            });
+
+            // 添加点击事件 - 移除选中变色逻辑
+            document.querySelectorAll('#entriesContainer > div[data-id], #modalEntriesContainer > div[data-id]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = el.getAttribute('data-id');
+                    loadDiary(id);
+                    // 关闭移动端弹窗
+                    historyModal.classList.add('hidden');
+                });
+            });
+        }
+
+        // 搜索日记
+        function handleSearch(e) {
+            const searchText = e.target.value;
+            loadDiaryEntries(searchText);
+        }
+
+        searchDiary.addEventListener('input', handleSearch);
+        searchDiaryModal.addEventListener('input', handleSearch);
+
+        // 加载单篇日记
+        function loadDiary(id) {
+            const diaries = JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || '[]');
+            const diary = diaries.find(d => d.id === id);
+            if (!diary) return;
+
+            currentDiaryId = id;
+            document.getElementById('time').value = diary.time;
+            document.getElementById('weather').value = diary.weather;
+            document.getElementById('mood').value = diary.mood;
+            document.getElementById('location').value = diary.location;
+
+            // 添加内容加载动画
+            diaryContent.classList.add('opacity-50');
+            setTimeout(() => {
+                diaryContent.innerHTML = diary.content;
+                diaryContent.classList.remove('opacity-50');
+                showToast('日记加载成功');
+            }, 300);
+        }
+
+        // 新建日记
+        function newDiaryEntry() {
+            currentDiaryId = null;
+            const now = new Date();
+            const local = now.toISOString().slice(0, 16);
+            document.getElementById('time').value = local;
+            document.getElementById('weather').selectedIndex = 0;
+            document.getElementById('mood').selectedIndex = 0;
+            document.getElementById('location').value = '';
+            diaryContent.innerHTML = '';
+
+            // 动画反馈
+            [newEntryBtn, newEntryBtnSide, newEntryBtnMobile].forEach(btn => {
+                if (btn) {
+                    btn.classList.add('scale-95');
+                    setTimeout(() => btn.classList.remove('scale-95'), 200);
+                }
+            });
+
+            diaryContent.focus();
+            showToast('新建日记');
+        }
+
+        newEntryBtn.addEventListener('click', newDiaryEntry);
+        newEntryBtnSide.addEventListener('click', newDiaryEntry);
+        newEntryBtnMobile.addEventListener('click', newDiaryEntry);
+
+        // 历史记录弹窗控制
+        function openHistoryModal() {
+            historyModal.classList.remove('hidden');
+            // 同步搜索框内容
+            searchDiaryModal.value = searchDiary.value;
+        }
+
+        historyBtn.addEventListener('click', openHistoryModal);
+        historyBtnMobile.addEventListener('click', openHistoryModal);
+
+        function closeHistoryModal() {
+            historyModal.classList.add('hidden');
+        }
+
+        closeHistoryBtn.addEventListener('click', closeHistoryModal);
+        closeHistoryBtn2.addEventListener('click', closeHistoryModal);
+
+        // 点击弹窗外部关闭
+        historyModal.addEventListener('click', (e) => {
+            if (e.target === historyModal) {
+                closeHistoryModal();
+            }
+        });
+
+        // 显示提示信息
+        function showToast(message, type = 'success') {
+            toastMessage.textContent = message;
+
+            // 设置图标和样式
+            if (type === 'success') {
+                toastIcon.className = 'fa fa-check-circle text-green-400';
+            } else if (type === 'error') {
+                toastIcon.className = 'fa fa-exclamation-circle text-red-400';
+            } else if (type === 'loading') {
+                toastIcon.className = 'fa fa-circle-o-notch fa-spin text-blue-400';
+            }
+
+            // 显示动画
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            // 自动关闭（加载状态不自动关闭）
+            if (type !== 'loading') {
+                clearTimeout(window.toastTimeout);
+                window.toastTimeout = setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2500);
+            }
+        }
+
+        // 为contenteditable添加占位符功能
+        function setupPlaceholder() {
+            const placeholder = diaryContent.getAttribute('data-placeholder');
+
+            // 初始化显示
+            if (!diaryContent.innerHTML.trim()) {
+                diaryContent.innerHTML = `<span class="text-neutral-300">${placeholder}</span>`;
+            }
+
+            // 聚焦时清除占位符
+            diaryContent.addEventListener('focus', () => {
+                if (diaryContent.innerHTML.trim() === `<span class="text-neutral-300">${placeholder}</span>`) {
+                    diaryContent.innerHTML = '';
+                }
+            });
+
+            // 失焦时恢复占位符
+            diaryContent.addEventListener('blur', () => {
+                if (!diaryContent.innerHTML.trim()) {
+                    diaryContent.innerHTML = `<span class="text-neutral-300">${placeholder}</span>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

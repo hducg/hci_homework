@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多媒体日记</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6c91c0;
+            --accent-color: #ff7e5f;
+            --light-color: #f7f9fc;
+            --dark-color: #2c3e50;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .current-time {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            padding: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-section {
+            background-color: #f9fbfd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+            input:focus, select:focus, textarea:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.2);
+            }
+
+        .diary-section {
+            grid-column: 1 / -1;
+        }
+
+        #diary-content {
+            min-height: 250px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: white;
+            margin-top: 5px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+            #diary-content:focus {
+                outline: none;
+                border-color: var(--primary-color);
+            }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f5f8ff;
+            border-radius: 8px;
+        }
+
+            .toolbar button {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 8px 15px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: var(--transition);
+                font-size: 0.9rem;
+            }
+
+                .toolbar button:hover {
+                    background-color: var(--primary-color);
+                    color: white;
+                    border-color: var(--primary-color);
+                }
+
+        .emoji-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .emoji:hover {
+                transform: scale(1.2);
+            }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+            .file-input-wrapper input[type="file"] {
+                position: absolute;
+                left: 0;
+                top: 0;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+                cursor: pointer;
+            }
+
+        .doodle-section {
+            margin-top: 20px;
+        }
+
+        .doodle-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+            .doodle-controls button {
+                padding: 8px 15px;
+                border-radius: 6px;
+                border: none;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: var(--transition);
+            }
+
+                .doodle-controls button:hover {
+                    opacity: 0.9;
+                }
+
+        #save-doodle {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        #clear-doodle {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        #canvas {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: white;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+        }
+
+        .preview-container {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-img {
+            max-width: 150px;
+            max-height: 150px;
+            display: block;
+        }
+
+        .preview-audio {
+            width: 250px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+            .remove-btn:hover {
+                background: var(--danger-color);
+                color: white;
+            }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border-top: 1px solid #eee;
+        }
+
+        .action-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #save-btn {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+            #save-btn:hover {
+                background-color: #3d8b40;
+            }
+
+        #clear-btn {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+            #clear-btn:hover {
+                background-color: #e68a00;
+            }
+
+        .diary-preview {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fbfd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+            .preview-header h2 {
+                font-size: 1.4rem;
+                color: var(--dark-color);
+            }
+
+        .preview-content {
+            padding: 15px;
+            background-color: white;
+            border-radius: 6px;
+            min-height: 150px;
+            border: 1px solid #eee;
+        }
+
+        .metadata {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: #edf2f7;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📔 我的多媒体日记</h1>
+            <div class="subtitle">记录生活中的每一个精彩瞬间</div>
+            <div class="current-time" id="current-time"></div>
+        </header>
+
+        <div class="main-content">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="time">时间</label>
+                    <input type="datetime-local" id="time">
+                </div>
+
+                <div class="form-group">
+                    <label for="weather">天气</label>
+                    <select id="weather">
+                        <option>☀️ 晴</option>
+                        <option>⛅ 多云</option>
+                        <option>🌧️ 雨</option>
+                        <option>🌨️ 雪</option>
+                        <option>🌪️ 大风</option>
+                        <option>🌫️ 雾</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="mood">心情</label>
+                    <select id="mood">
+                        <option>😊 开心</option>
+                        <option>😔 难过</option>
+                        <option>😠 生气</option>
+                        <option>😌 平静</option>
+                        <option>😍 兴奋</option>
+                        <option>😨 紧张</option>
+                        <option>😴 疲惫</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">地点</label>
+                    <input type="text" id="location" placeholder="请输入地点">
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">标签</label>
+                    <input type="text" id="tags" placeholder="添加标签，用逗号分隔 (例如: 旅行, 家庭)">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="diary-content">事件与感想</label>
+                    <div id="diary-content" contenteditable="true"></div>
+                </div>
+
+                <div class="toolbar">
+                    <button onclick="insertEmoji('😊')">
+                        <span>😊</span> 开心
+                    </button>
+                    <button onclick="insertEmoji('😢')">
+                        <span>😢</span> 难过
+                    </button>
+                    <button onclick="insertEmoji('❤️')">
+                        <span>❤️</span> 爱心
+                    </button>
+
+                    <div class="file-input-wrapper">
+                        <button>
+                            <span>🖼️</span> 插入图片
+                        </button>
+                        <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+                    </div>
+
+                    <div class="file-input-wrapper">
+                        <button>
+                            <span>🎵</span> 插入音频
+                        </button>
+                        <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+                    </div>
+                </div>
+
+                <div class="emoji-picker">
+                    <span class="emoji" onclick="insertEmoji('😀')">😀</span>
+                    <span class="emoji" onclick="insertEmoji('😂')">😂</span>
+                    <span class="emoji" onclick="insertEmoji('🥰')">🥰</span>
+                    <span class="emoji" onclick="insertEmoji('😎')">😎</span>
+                    <span class="emoji" onclick="insertEmoji('🤩')">🤩</span>
+                    <span class="emoji" onclick="insertEmoji('😭')">😭</span>
+                    <span class="emoji" onclick="insertEmoji('😡')">😡</span>
+                    <span class="emoji" onclick="insertEmoji('👍')">👍</span>
+                    <span class="emoji" onclick="insertEmoji('👎')">👎</span>
+                    <span class="emoji" onclick="insertEmoji('❤️')">❤️</span>
+                    <span class="emoji" onclick="insertEmoji('✨')">✨</span>
+                    <span class="emoji" onclick="insertEmoji('🎉')">🎉</span>
+                </div>
+            </div>
+
+            <div class="form-section doodle-section">
+                <div class="form-group">
+                    <label>涂鸦板</label>
+                    <div class="doodle-controls">
+                        <button id="save-doodle" onclick="insertDoodle()">保存并插入涂鸦</button>
+                        <button id="clear-doodle" onclick="clearDoodle()">清除画布</button>
+                    </div>
+                    <canvas id="canvas" width="450" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-group">
+                    <label>媒体预览</label>
+                    <div class="preview-container" id="media-preview">
+                        <!-- 预览内容将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-btn" id="save-btn">
+                <span>💾</span> 保存日记
+            </button>
+            <button class="action-btn" id="clear-btn">
+                <span>🗑️</span> 清空内容
+            </button>
+        </div>
+
+        <div class="diary-preview">
+            <div class="preview-header">
+                <h2>日记预览</h2>
+            </div>
+            <div class="preview-content" id="diary-preview-content">
+                <!-- 预览内容将在这里动态生成 -->
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 多媒体日记 | 记录生活点滴</p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化时间和日期
+        function updateTime() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                weekday: 'long'
+            };
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN', options);
+        }
+
+        // 设置初始时间
+        window.onload = () => {
+            const now = new Date();
+            const local = now.toISOString().slice(0, 16);
+            document.getElementById("time").value = local;
+
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // 初始化涂鸦功能
+            initDoodle();
+
+            // 添加事件监听器
+            document.getElementById('save-btn').addEventListener('click', saveDiary);
+            document.getElementById('clear-btn').addEventListener('click', clearDiary);
+        }
+
+        // 插入表情
+        function insertEmoji(emoji) {
+            const content = document.getElementById("diary-content");
+            const selection = window.getSelection();
+
+            if (selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                const emojiNode = document.createTextNode(emoji);
+                range.insertNode(emojiNode);
+
+                // 移动光标到表情后
+                range.setStartAfter(emojiNode);
+                range.setEndAfter(emojiNode);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                content.innerHTML += emoji;
+            }
+
+            updatePreview();
+        }
+
+        // 插入图片
+        function insertImage() {
+            const input = document.getElementById("imageInput");
+            const file = input.files[0];
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewContainer = document.getElementById("media-preview");
+                const previewId = `preview-${Date.now()}`;
+
+                previewContainer.innerHTML += `
+              <div class="preview-item">
+                <img src="${e.target.result}" class="preview-img">
+                <button class="remove-btn" onclick="removePreview('${previewId}')">×</button>
+                <input type="hidden" name="image" value="${e.target.result}">
+              </div>
+            `;
+
+                // 在编辑器中插入占位符
+                const content = document.getElementById("diary-content");
+                content.innerHTML += `<span class="tag">[图片]</span>`;
+
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 插入音频
+        function insertAudio() {
+            const input = document.getElementById("audioInput");
+            const file = input.files[0];
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewContainer = document.getElementById("media-preview");
+                const previewId = `preview-${Date.now()}`;
+
+                previewContainer.innerHTML += `
+              <div class="preview-item">
+                <audio controls class="preview-audio">
+                  <source src="${e.target.result}" type="${file.type}">
+                </audio>
+                <button class="remove-btn" onclick="removePreview('${previewId}')">×</button>
+                <input type="hidden" name="audio" value="${e.target.result}">
+              </div>
+            `;
+
+                // 在编辑器中插入占位符
+                const content = document.getElementById("diary-content");
+                content.innerHTML += `<span class="tag">[音频]</span>`;
+
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 涂鸦功能
+        let drawing = false;
+        let canvas, ctx;
+
+        function initDoodle() {
+            canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d");
+
+            // 设置画布样式
+            ctx.lineWidth = 3;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = "#000000";
+
+            // 事件监听
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mousemove", draw);
+            canvas.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mouseout", stopDrawing);
+
+            // 触摸事件支持
+            canvas.addEventListener("touchstart", handleTouch);
+            canvas.addEventListener("touchmove", handleTouch);
+            canvas.addEventListener("touchend", stopDrawing);
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type, {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+
+        function startDrawing(e) {
+            drawing = true;
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.beginPath();
+        }
+
+        function clearDoodle() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function insertDoodle() {
+            const content = document.getElementById("diary-content");
+            const dataURL = canvas.toDataURL();
+
+            // 添加到媒体预览
+            const previewContainer = document.getElementById("media-preview");
+            const previewId = `preview-${Date.now()}`;
+
+            previewContainer.innerHTML += `
+            <div class="preview-item">
+              <img src="${dataURL}" class="preview-img">
+              <button class="remove-btn" onclick="removePreview('${previewId}')">×</button>
+              <input type="hidden" name="doodle" value="${dataURL}">
+            </div>
+          `;
+
+            // 在编辑器中插入占位符
+            content.innerHTML += `<span class="tag">[涂鸦]</span>`;
+
+            // 清除画布
+            clearDoodle();
+
+            updatePreview();
+        }
+
+        // 移除预览项
+        function removePreview(previewId) {
+            const previewItem = document.querySelector(`#${previewId}`);
+            if (previewItem) {
+                previewItem.remove();
+                updatePreview();
+            }
+        }
+
+        // 更新预览
+        function updatePreview() {
+            const previewContent = document.getElementById("diary-preview-content");
+            const diaryContent = document.getElementById("diary-content").innerHTML;
+
+            // 获取元数据
+            const time = document.getElementById("time").value;
+            const weather = document.getElementById("weather").value;
+            const mood = document.getElementById("mood").value;
+            const location = document.getElementById("location").value;
+            const tags = document.getElementById("tags").value;
+
+            // 格式化时间
+            const date = new Date(time);
+            const formattedTime = date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // 构建预览内容
+            let previewHTML = `
+            <div class="metadata">
+              <div class="metadata-item">📅 ${formattedTime}</div>
+              <div class="metadata-item">${weather}</div>
+              <div class="metadata-item">${mood}</div>
+              <div class="metadata-item">📍 ${location || '未指定地点'}</div>
+            </div>
+          `;
+
+            // 添加标签
+            if (tags) {
+                const tagList = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                previewHTML += `<div class="metadata">`;
+                tagList.forEach(tag => {
+                    previewHTML += `<div class="metadata-item">🏷️ ${tag}</div>`;
+                });
+                previewHTML += `</div>`;
+            }
+
+            // 添加日记内容
+            previewHTML += `<div class="diary-text">${diaryContent}</div>`;
+
+            // 添加媒体预览
+            const mediaPreview = document.getElementById("media-preview").innerHTML;
+            if (mediaPreview) {
+                previewHTML += `<div class="media-preview">${mediaPreview}</div>`;
+            }
+
+            previewContent.innerHTML = previewHTML;
+        }
+
+        // 保存日记
+        function saveDiary() {
+            // 在实际应用中，这里会保存到数据库或本地存储
+            // 现在只显示一个成功消息
+            alert('日记保存成功！');
+            updatePreview();
+        }
+
+        // 清空日记
+        function clearDiary() {
+            if (confirm('确定要清空所有内容吗？')) {
+                document.getElementById("diary-content").innerHTML = '';
+                document.getElementById("media-preview").innerHTML = '';
+                document.getElementById("location").value = '';
+                document.getElementById("tags").value = '';
+                clearDoodle();
+                updatePreview();
+            }
+        }
+
+        // 监听内容变化
+        document.getElementById("diary-content").addEventListener('input', updatePreview);
+        document.getElementById("time").addEventListener('change', updatePreview);
+        document.getElementById("weather").addEventListener('change', updatePreview);
+        document.getElementById("mood").addEventListener('change', updatePreview);
+        document.getElementById("location").addEventListener('input', updatePreview);
+        document.getElementById("tags").addEventListener('input', updatePreview);
+    </script>
+</body>
+</html>

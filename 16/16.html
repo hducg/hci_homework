@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记</title>
+  <style>
+      * {
+          box-sizing: border-box;
+          /*边框盒模型*/
+          /*‘*’：通配符选择器，匹配页面中的所有元素 box-sizing: border-box - 设置盒模型为边框盒模型（border-box：width/height = 内容 + 内边距 + 边框 的总和）*/
+      }
+
+      body {
+          font-family: 'Arial', sans-serif;     /*如果用户电脑没有 Arial，使用系统默认的无衬线字体*/
+          padding: 20px;
+          background-color: #f7f9fc;
+          max-width: 800px;
+          margin: 0 auto;                       /* 上下边距为0，左右自动 */
+          line-height: 1.6;
+      }
+
+    h1 {
+          text-align: center;
+          color: #2c3e50;
+          margin-bottom: 30px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #eaeaea;         /*添加下分割线*/
+    }
+
+      .form-group {
+          margin-bottom: 20px;
+          background: lightblue;                  /*更改了背景颜色*/
+          padding: 15px;
+          border-radius: 8px;                     /*边框圆角*/ 
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05); /*添加水平偏移0，垂直偏移2，模糊半径5，黑色5%透明度的盒子阴影*/
+      }
+
+    label {
+      font-weight: bold;
+      display: block;                            /*将元素设置为块状元素，独占一行，可设置宽高、上下外边距，默认宽度百分百*/
+      margin-bottom: 8px;
+      color: #34495e;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    #diary-content {
+      min-height: 200px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      background-color: white;
+      border-radius: 4px;
+    }
+     
+/*    placeholder 属性在普通的 <div> 元素上不起作用！*/
+    #diary-content:empty::before {
+      content: "开始记录今天的故事...";
+      color: #999;
+      font-style: italic;
+      font-size:14px;
+    }
+
+    #diary-content:focus::before {
+      content: ""; /* 获得焦点时隐藏提示文字 */
+    }
+      
+
+    #canvas {
+      border: 1px solid #aaa;
+      cursor: crosshair;                        /*十字光标*/
+      background-color: white;
+      border-radius: 4px;
+      display: block;
+      margin-bottom: 10px;
+      touch-action: none;                       /* 防止触摸设备上的默认行为 （比如滚动缩放等）*/
+    }
+
+    .toolbar {
+      display: flex;                            /*弹性布局容器（子元素默认排成一行）*/
+      flex-wrap: wrap;                          /*允许换行*/
+      gap: 10px;                                /*子元素间距*/
+      align-items: center;                      /*垂直居中对齐*/
+    }
+
+      .toolbar button {
+          padding: 8px 12px;
+          background-color: #3498db;
+          color: white;
+          border: none;                         /*移除按钮的默认边框*/
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.3s;    /*当背景颜色发生变化时，用0 .3秒的时间平滑过渡，而不是瞬间切换*/
+      }
+
+    .toolbar button:hover {                     /*鼠标悬停时作用*/
+      background-color: #2980b9;
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+
+    .emoji {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    .canvas-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .canvas-controls button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    #insert-doodle {
+      background-color: #2ecc71;
+      color: white;
+    }
+    
+    #insert-doodle:hover {
+      background-color: #27ae60;
+    }
+    
+    #clear-canvas {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    #clear-canvas:hover {
+      background-color: #c0392b;
+    }
+    
+    .file-input-label {
+      display: inline-block;                 /*同时具有行内元素和块级元素特性*/
+      padding: 8px 15px;
+      background-color: #9b59b6;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .file-input-label:hover {
+      background-color: #8e44ad;
+    }
+
+      input[type="file"] {
+          display: none;                    /*隐藏所有类型为file的输入框*/
+      }
+    
+    .section-title {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-top: 25px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+        /* 涂鸦工具样式 */
+    .doodle-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .color-picker {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .color-option {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s;
+    }
+
+    .color-option:hover {
+      transform: scale(1.2);
+    }
+
+    .color-option.active {
+      border-color: #333;
+      transform: scale(1.2);
+    }
+
+    .brush-size {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brush-size label {
+      margin-bottom: 0;
+      white-space: nowrap;
+    }
+
+    .brush-size input {
+      width: 150px;
+    }
+
+    .brush-preview {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+    <!--主标题-->
+  <h1>我的多媒体日记</h1>
+
+    <!--日期时间-->
+  <div class="form-group">
+      <label>时间:</label>
+      <input type="datetime-local" id="time">
+    <!--日期时间选择器（浏览器会为<input type="datetime-local">提供日历样式的时间设置器，是原生UI组件）-->
+  </div>
+
+    <!--天气-->
+  <div class="form-group">
+    <label>天气:</label>
+    <select id="weather">
+        <option>☀️ 晴</option>
+        <option>⛅ 多云</option>
+        <option>🌧️ 雨</option>
+        <option>🌨️ 雪</option>
+        <!-- 下拉选择框 -->
+    </select>
+  </div>
+
+    <!--心情-->
+  <div class="form-group">
+    <label>心情:</label>
+    <select id="mood">
+      <option>😊 开心</option>
+      <option>😔 难过</option>
+      <option>😠 生气</option>
+      <option>😌 平静</option>
+    </select>
+  </div>
+
+    <!--地点-->
+  <div class="form-group">
+      <label>地点:</label>
+      <input type="text" id="location" placeholder="请输入地点">
+      <!--placeholder：提供提示文字-->
+  </div>
+
+    <!--日记文本输入框-->
+  <div class="form-group">
+    <label>事件与感想:</label>
+    <div id="diary-content" contenteditable="true" ></div>
+  </div>
+
+  <div class="section-title">插入多媒体内容</div>
+  
+    <!--表情插入部分-->
+  <div class="form-group toolbar">
+    <label>插入表情：</label>
+    <button onclick="insertEmoji('😊')">😊</button>
+    <button onclick="insertEmoji('😢')">😢</button>
+    <button onclick="insertEmoji('❤️')">❤️</button>
+    <button onclick="insertEmoji('👍')">👍</button>
+    <button onclick="insertEmoji('🎉')">🎉</button>
+  </div>
+
+    <!--图片音频插入部分-->
+  <div class="form-group toolbar">
+      <label>插入媒体：</label>
+      <label for="imageInput" class="file-input-label">选择图片</label>             <!--for="imageInput" - 关联到ID为imageInput的文件输入框，因为隐藏了文件输入框-->
+      <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+                                                                                    <!-- 图片上传输入，只接受图片文件，变化时调用insertImage -->
+
+      <label for="audioInput" class="file-input-label">选择音频</label>
+      <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+  </div>
+
+    <!--涂鸦部分-->
+  <div class="form-group">
+      <label>涂鸦板:</label><br>
+
+      <!--涂鸦工具区域-->
+      <div class="doodle-tools">
+          <div class="color-picker">
+              <label>颜色:</label>
+              <div class="color-option active" style="background-color: #000000;" data-color="#000000"></div>
+              <div class="color-option" style="background-color: #ff0000;" data-color="#ff0000"></div>
+              <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+              <div class="color-option" style="background-color: #008000;" data-color="#008000"></div>
+              <div class="color-option" style="background-color: #ffff00;" data-color="#ffff00"></div>
+              <div class="color-option" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+          </div>
+
+          <div class="brush-size">
+              <label>笔画粗细:</label>
+              <input type="range" id="brushSize" min="1" max="20" value="3">
+              <div class="brush-preview" id="brushPreview" style="background-color: #000000;"></div>
+          </div>
+      </div>
+
+      <canvas id="canvas" width="300" height="200"></canvas>
+      <div class="canvas-controls">
+          <button id="insert-doodle" onclick="insertDoodle()">插入涂鸦到日记</button>
+          <button id="clear-canvas" onclick="clearCanvas()">清空画布</button>
+      </div>
+  </div>
+
+  <script>
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    /*记录位置信息，改进涂鸦连续性*/
+    let lastX = 0;
+    let lastY = 0;
+    let currentColor = "#000000";
+    let brushSize = 3;
+
+      // 初始化涂鸦设置
+    function initDoodle() {
+      // 设置颜色选项点击事件
+      document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', function() {
+          // 移除所有active类
+          document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.remove('active');
+          });
+          // 添加active类到当前选项
+          this.classList.add('active');
+          // 更新当前颜色
+          currentColor = this.getAttribute('data-color');
+          // 更新画笔预览颜色
+          document.getElementById('brushPreview').style.backgroundColor = currentColor;
+        });
+      });
+  
+      // 设置笔画粗细变化事件
+      document.getElementById('brushSize').addEventListener('input', function() {
+        brushSize = parseInt(this.value);
+        // 更新画笔预览大小
+        const preview = document.getElementById('brushPreview');
+        preview.style.width = brushSize * 2 + 'px';
+        preview.style.height = brushSize * 2 + 'px';
+        preview.textContent = brushSize;
+      });
+  
+      // 初始化画笔预览
+      document.getElementById('brushPreview').style.width = brushSize * 2 + 'px';
+      document.getElementById('brushPreview').style.height = brushSize * 2 + 'px';
+      document.getElementById('brushPreview').textContent = brushSize;
+    }
+
+    // 改进的绘图函数 - 使用线条连接点，使笔画更连续
+    function draw(e) {
+      if (!drawing) return;
+  
+      // 获取鼠标位置
+      let x, y;
+      if (e.type.includes('touch')) {
+        // 触摸事件
+        const rect = canvas.getBoundingClientRect();
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+      } else {
+        // 鼠标事件
+        x = e.offsetX;
+        y = e.offsetY;
+      }
+  
+      // 设置绘图样式
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+  
+      // 开始绘制路径
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+  
+      // 更新最后位置
+      lastX = x;
+      lastY = y;
+    }
+
+    // 开始绘制
+    function startDrawing(e) {
+      drawing = true;
+  
+      // 获取起始位置
+      if (e.type.includes('touch')) {
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.touches[0].clientX - rect.left;
+        lastY = e.touches[0].clientY - rect.top;
+      } else {
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+      }
+    }
+
+    // 停止绘制
+    function stopDrawing() {
+      drawing = false;
+      // 开始新的路径
+      ctx.beginPath();
+    }
+
+    // 添加事件监听器
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    canvas.addEventListener("mousemove", draw);
+
+    // 添加触摸事件支持
+    canvas.addEventListener("touchstart", startDrawing);
+    canvas.addEventListener("touchend", stopDrawing);
+    canvas.addEventListener("touchcancel", stopDrawing);
+    canvas.addEventListener("touchmove", draw);
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+      clearCanvas();
+    }
+
+    // 清空画布功能
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+      // 初始化涂鸦功能
+      initDoodle();
+
+   /* // 初始化时间为当前
+      window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+    }*/
+
+      //修改获取当前时间的方法，Date() 返回的是UTC时间（协调世界时）与用户的当地时间不同
+      function getLocalDateTimeSimple() {
+          const now = new Date();
+          // 调整时区偏移
+          now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+          //now.getTimezoneOffset()返回本地时间与UTC时间的分钟差值
+          return now.toISOString().slice(0, 16);
+      }
+
+      window.onload = () => {
+          document.getElementById("time").value = getLocalDateTimeSimple();
+      };
+  </script>
+</body>
+</html>

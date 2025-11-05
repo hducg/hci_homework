@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>多媒体日记 · 升级版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ---------- 美化开始 ---------- */
+:root{
+  --grad-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --panel-bg: rgba(255,255,255,.75);
+  --radius: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,.15);
+  --trans: .3s ease;
+}
+body{
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--grad-bg) fixed;
+  display: flex;
+  min-height: 100vh;
+  color: #333;
+}
+/* 左侧信息面板 */
+.info-panel{
+  width: 260px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  box-shadow: var(--shadow);
+  padding: 24px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.info-panel h2{
+  margin: 0 0 10px;
+  font-size: 22px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+.form-group{
+  display: flex;
+  flex-direction: column;
+}
+.form-group label{
+  font-size: 14px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.form-group input,
+.form-group select{
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+  transition: var(--trans);
+}
+.form-group input:focus,
+.form-group select:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102,126,234,.35);
+}
+
+/* 右侧编辑区 */
+.editor-wrap{
+  flex: 1;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+#diary-content{
+  min-height: 220px;
+  padding: 15px;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-y: auto;
+}
+.toolbar{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.toolbar button,
+.toolbar input[type=file]::file-selector-button{
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #667eea;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--trans);
+}
+.toolbar button:hover,
+.toolbar input[type=file]::file-selector-button:hover{
+  background: #764ba2;
+  transform: translateY(-2px);
+}
+/* 涂鸦区域 */
+.doodle-box{
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+#canvas{
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: crosshair;
+}
+.doodle-controls{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.preview-img,
+.preview-audio{
+  max-width: 100%;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+/* 表情 */
+.emoji{
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  transition: transform .2s;
+}
+.emoji:hover{
+  transform: scale(1.2);
+}
+/* ---------- 美化结束 ---------- */
+</style>
+</head>
+<body>
+
+<!-- 左侧信息面板 -->
+<aside class="info-panel">
+  <h2>🌟 我的日记</h2>
+
+  <div class="form-group">
+    <label>时间</label>
+    <input type="datetime-local" id="time">
+  </div>
+
+  <div class="form-group">
+    <label>天气</label>
+    <select id="weather">
+      <option>☀️ 晴</option><option>⛅ 多云</option><option>🌧️ 雨</option><option>🌨️ 雪</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>心情</label>
+    <select id="mood">
+      <option>😊 开心</option><option>😔 难过</option><option>😠 生气</option><option>😌 平静</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>地点</label>
+    <input type="text" id="location" placeholder="请输入地点">
+  </div>
+</aside>
+
+<!-- 右侧编辑区 -->
+<section class="editor-wrap">
+  <div id="diary-content" contenteditable="true"></div>
+
+  <div class="toolbar">
+    <button onclick="insertEmoji('😊')">😊</button>
+    <button onclick="insertEmoji('😢')">😢</button>
+    <button onclick="insertEmoji('❤️')">❤️</button>
+    <input type="file" id="imageInput" accept="image/*" onchange="insertImage()">
+    <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()">
+  </div>
+
+  <div class="doodle-box">
+    <canvas id="canvas" width="380" height="220"></canvas>
+    <div class="doodle-controls">
+      <button onclick="undoDoodle()">↶ 撤回上一笔</button>
+      <button onclick="insertDoodle()">插入涂鸦</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ---------------- 基础功能 ---------------- */
+function insertEmoji(emoji) {
+  document.getElementById('diary-content').innerHTML += emoji;
+}
+function insertImage() {
+  const file = document.getElementById('imageInput').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('diary-content').innerHTML += `<br>< img src="${e.target.result}" class="preview-img"><br>`;
+  };
+  reader.readAsDataURL(file);
+}
+function insertAudio() {
+  const file = document.getElementById('audioInput').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('diary-content').innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+  };
+  reader.readAsDataURL(file);
+}
+/* ---------------- 涂鸦：支持撤回 ---------------- */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+let history = []; // 保存每一笔的 imageData
+function saveState() {
+  history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+}
+function undoDoodle() {
+  if (history.length === 0) return;
+  ctx.putImageData(history.pop(), 0, 0);
+}
+canvas.addEventListener('mousedown', e => {
+  drawing = true;
+  saveState(); // 开始新的一笔前保存状态
+});
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseout', () => drawing = false);
+canvas.addEventListener('mousemove', e => {
+  if (!drawing) return;
+  ctx.fillStyle = 'black';
+  ctx.beginPath();
+  ctx.arc(e.offsetX, e.offsetY, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+});
+function insertDoodle() {
+  document.getElementById('diary-content').innerHTML += `<br>< img src="${canvas.toDataURL()}" class="preview-img"><br>`;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  history = []; // 清空历史
+}
+/* ---------------- 初始化时间 ---------------- */
+window.onload = () => {
+  const local = new Date().toISOString().slice(0, 16);
+  document.getElementById('time').value = local;
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>多彩日记 - 记录生活的每一刻</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#EC4899',
+                        neutral: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .diary-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+
+            .toolbar-item {
+                @apply p-2 rounded-full hover:bg-gray-100 transition-all duration-200 cursor-pointer;
+            }
+
+                .toolbar-item.active {
+                    @apply bg-primary/10 text-primary;
+                }
+
+            .emoji-btn {
+                @apply text-2xl p-1 rounded hover:bg-gray-100 transition-all cursor-pointer;
+            }
+
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-in-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen font-sans text-dark">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 头部标题 -->
+        <header class="mb-8 text-center">
+            <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-primary mb-2">多彩日记</h1>
+            <p class="text-gray-500">记录生活的每一个精彩瞬间</p>
+        </header>
+
+        <!-- 日记卡片 -->
+        <div class="bg-white rounded-2xl diary-shadow p-6 mb-8 transition-all duration-300 hover:shadow-lg">
+            <!-- 基本信息区 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="space-y-3">
+                    <div>
+                        <label for="time" class="block text-sm font-medium text-gray-700 mb-1">时间</label>
+                        <input type="datetime-local" id="time" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all" />
+                    </div>
+
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-1">地点</label>
+                        <div class="relative">
+                            <input type="text" id="location" placeholder="输入地点或点击获取位置" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all" />
+                            <i class="fa fa-map-marker absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <button onclick="getLocation()" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary hover:underline">获取位置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label for="weather" class="block text-sm font-medium text-gray-700 mb-1">天气</label>
+                        <select id="weather" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all appearance-none bg-white">
+                            <option value="☀️ 晴">☀️ 晴</option>
+                            <option value="⛅ 多云">⛅ 多云</option>
+                            <option value="🌧️ 雨">🌧️ 雨</option>
+                            <option value="🌨️ 雪">🌨️ 雪</option>
+                            <option value="🌩️ 雷暴">🌩️ 雷暴</option>
+                            <option value="🌫️ 雾">🌫️ 雾</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="mood" class="block text-sm font-medium text-gray-700 mb-1">心情</label>
+                        <select id="mood" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all appearance-none bg-white">
+                            <option value="😊 开心">😊 开心</option>
+                            <option value="😌 平静">😌 平静</option>
+                            <option value="😔 难过">😔 难过</option>
+                            <option value="😠 生气">😠 生气</option>
+                            <option value="😲 惊讶">😲 惊讶</option>
+                            <option value="😍 爱慕">😍 爱慕</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日记内容区 -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">日记内容</label>
+                <div id="diary-content" contenteditable="true" class="min-h-[200px] w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all bg-neutral/50" placeholder="开始记录你的想法..."></div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="flex flex-wrap items-center gap-1 py-2 mb-6 border-y border-gray-200">
+                <p class="text-sm text-gray-500 mr-2">插入:</p>
+
+                <!-- 文本格式工具 -->
+                <div class="flex items-center gap-1 mr-2">
+                    <button class="toolbar-item" title="加粗" onclick="formatText('bold')">
+                        <i class="fa fa-bold"></i>
+                    </button>
+                    <button class="toolbar-item" title="斜体" onclick="formatText('italic')">
+                        <i class="fa fa-italic"></i>
+                    </button>
+                    <button class="toolbar-item" title="下划线" onclick="formatText('underline')">
+                        <i class="fa fa-underline"></i>
+                    </button>
+                </div>
+
+                <!-- 插入图片 -->
+                <label class="toolbar-item" title="插入图片">
+                    <i class="fa fa-image"></i>
+                    <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" class="hidden" />
+                </label>
+
+                <!-- 录音功能 -->
+                <button class="toolbar-item" title="录音" id="recordBtn" onclick="toggleRecording()">
+                    <i class="fa fa-microphone"></i>
+                </button>
+
+                <!-- 涂鸦功能 -->
+                <button class="toolbar-item" title="涂鸦" onclick="toggleDoodlePanel()">
+                    <i class="fa fa-paint-brush"></i>
+                </button>
+
+                <!-- 表情按钮 -->
+                <button class="toolbar-item" title="表情" onclick="toggleEmojiPanel()">
+                    <i class="fa fa-smile-o"></i>
+                </button>
+
+                <!-- 标签功能 -->
+                <button class="toolbar-item" title="添加标签" onclick="addTag()">
+                    <i class="fa fa-tag"></i>
+                </button>
+            </div>
+
+            <!-- 表情面板 -->
+            <div id="emojiPanel" class="hidden mb-6 p-3 bg-neutral rounded-lg animate-fade-in">
+                <div class="flex flex-wrap gap-2">
+                    <span class="emoji-btn" onclick="insertEmoji('😊')">😊</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😂')">😂</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😍')">😍</span>
+                    <span class="emoji-btn" onclick="insertEmoji('❤️')">❤️</span>
+                    <span class="emoji-btn" onclick="insertEmoji('👍')">👍</span>
+                    <span class="emoji-btn" onclick="insertEmoji('🎉')">🎉</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😢')">😢</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😠')">😠</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😲')">😲</span>
+                    <span class="emoji-btn" onclick="insertEmoji('👏')">👏</span>
+                    <span class="emoji-btn" onclick="insertEmoji('🙏')">🙏</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😴')">😴</span>
+                    <span class="emoji-btn" onclick="insertEmoji('😋')">😋</span>
+                    <span class="emoji-btn" onclick="insertEmoji('🤔')">🤔</span>
+                    <span class="emoji-btn" onclick="insertEmoji('🌟')">🌟</span>
+                </div>
+            </div>
+
+            <!-- 涂鸦面板 -->
+            <div id="doodlePanel" class="hidden mb-6 animate-fade-in">
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <canvas id="canvas" width="400" height="250" class="border border-gray-300 rounded-lg cursor-crosshair bg-white"></canvas>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="setDrawingColor('#000000')" class="w-8 h-8 rounded-full bg-black border-2 border-white shadow"></button>
+                            <button onclick="setDrawingColor('#FF0000')" class="w-8 h-8 rounded-full bg-red-500 border-2 border-white shadow"></button>
+                            <button onclick="setDrawingColor('#00FF00')" class="w-8 h-8 rounded-full bg-green-500 border-2 border-white shadow"></button>
+                            <button onclick="setDrawingColor('#0000FF')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white shadow"></button>
+                            <button onclick="setDrawingColor('#FFFF00')" class="w-8 h-8 rounded-full bg-yellow-500 border-2 border-white shadow"></button>
+                            <button onclick="setDrawingColor('#FF00FF')" class="w-8 h-8 rounded-full bg-purple-500 border-2 border-white shadow"></button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="setLineWidth(2)" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">细</button>
+                            <button onclick="setLineWidth(5)" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">中</button>
+                            <button onclick="setLineWidth(10)" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">粗</button>
+                        </div>
+                        <button onclick="clearCanvas()" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">清除</button>
+                        <button onclick="insertDoodle()" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">插入涂鸦</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 录音状态指示 -->
+            <div id="recordingIndicator" class="hidden mb-6 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                <span class="text-red-600 text-sm">正在录音...</span>
+                <span id="recordingTime" class="ml-auto text-sm text-gray-500">00:00</span>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="flex flex-wrap gap-3 justify-end">
+                <button onclick="clearAll()" class="px-5 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">清空</button>
+                <button onclick="saveDiary()" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+                    <i class="fa fa-save"></i> 保存日记
+                </button>
+            </div>
+        </div>
+
+        <!-- 保存的日记列表 -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fa fa-history text-primary"></i> 历史记录
+            </h2>
+            <div id="diaryList" class="space-y-4">
+                <!-- 历史记录将通过JS动态生成 -->
+                <p class="text-gray-500 text-center py-6">暂无保存的日记</p>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="text-center text-gray-500 text-sm py-4">
+            <p>多彩日记 &copy; 2023 - 记录生活的美好瞬间</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let drawing = false;
+        let currentColor = '#000000';
+        let lineWidth = 2;
+        let mediaRecorder;
+        let recording = false;
+        let recordingStartTime;
+        let recordingTimer;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const diaryContent = document.getElementById("diary-content");
+
+        // 初始化
+        window.onload = () => {
+            // 设置当前时间
+            const now = new Date();
+            const localTime = now.toISOString().slice(0, 16);
+            document.getElementById("time").value = localTime;
+
+            // 初始化画布
+            initCanvas();
+
+            // 加载保存的日记
+            loadDiaries();
+        };
+
+        // 初始化画布
+        function initCanvas() {
+            // 支持触摸设备
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mouseout", stopDrawing);
+            canvas.addEventListener("mousemove", draw);
+
+            canvas.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                startDrawing({ offsetX: x, offsetY: y });
+            });
+
+            canvas.addEventListener("touchend", (e) => {
+                e.preventDefault();
+                stopDrawing();
+            });
+
+            canvas.addEventListener("touchmove", (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                draw({ offsetX: x, offsetY: y });
+            });
+        }
+
+        // 画布绘制函数
+        function startDrawing(e) {
+            drawing = true;
+            ctx.beginPath();
+            ctx.arc(e.offsetX, e.offsetY, lineWidth / 2, 0, Math.PI * 2);
+            ctx.fillStyle = currentColor;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        function stopDrawing() {
+            if (drawing) {
+                ctx.closePath();
+                drawing = false;
+            }
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.stroke();
+
+            // 重置路径，避免连续绘制
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        // 设置画笔颜色
+        function setDrawingColor(color) {
+            currentColor = color;
+        }
+
+        // 设置画笔宽度
+        function setLineWidth(width) {
+            lineWidth = width;
+        }
+
+        // 清除画布
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 插入涂鸦
+        function insertDoodle() {
+            const dataURL = canvas.toDataURL();
+            insertContent(`<div class="my-3"><img src="${dataURL}" class="max-w-full h-auto rounded-lg shadow-sm"></div>`);
+            clearCanvas();
+            toggleDoodlePanel();
+        }
+
+        // 切换表情面板显示
+        function toggleEmojiPanel() {
+            const panel = document.getElementById("emojiPanel");
+            panel.classList.toggle("hidden");
+            document.getElementById("doodlePanel").classList.add("hidden");
+        }
+
+        // 切换涂鸦面板显示
+        function toggleDoodlePanel() {
+            const panel = document.getElementById("doodlePanel");
+            panel.classList.toggle("hidden");
+            document.getElementById("emojiPanel").classList.add("hidden");
+        }
+
+        // 插入表情
+        function insertEmoji(emoji) {
+            insertContent(emoji);
+        }
+
+        // 插入图片
+        function insertImage() {
+            const input = document.getElementById("imageInput");
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                insertContent(`<div class="my-3"><img src="${e.target.result}" class="max-w-full h-auto rounded-lg shadow-sm"></div>`);
+            };
+            reader.readAsDataURL(file);
+
+            // 重置输入，允许重复选择同一文件
+            input.value = "";
+        }
+
+        // 录音功能
+        function toggleRecording() {
+            const recordBtn = document.getElementById("recordBtn");
+            const indicator = document.getElementById("recordingIndicator");
+
+            if (!recording) {
+                // 开始录音
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream);
+                        const audioChunks = [];
+
+                        mediaRecorder.addEventListener("dataavailable", event => {
+                            audioChunks.push(event.data);
+                        });
+
+                        mediaRecorder.addEventListener("stop", () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            insertContent(`<div class="my-3"><audio controls class="w-full max-w-md"><source src="${audioUrl}" type="audio/wav"> 您的浏览器不支持音频播放。</audio></div>`);
+
+                            // 停止所有轨道
+                            stream.getTracks().forEach(track => track.stop());
+                        });
+
+                        mediaRecorder.start();
+                        recording = true;
+                        recordBtn.innerHTML = '<i class="fa fa-stop"></i>';
+                        recordBtn.classList.add('active', 'text-red-500');
+                        indicator.classList.remove('hidden');
+
+                        // 开始计时
+                        recordingStartTime = Date.now();
+                        updateRecordingTime();
+                    })
+                    .catch(error => {
+                        console.error("录音权限被拒绝:", error);
+                        alert("无法访问麦克风，请确保已授予权限。");
+                    });
+            } else {
+                // 停止录音
+                mediaRecorder.stop();
+                recording = false;
+                recordBtn.innerHTML = '<i class="fa fa-microphone"></i>';
+                recordBtn.classList.remove('active', 'text-red-500');
+                indicator.classList.add('hidden');
+                clearInterval(recordingTimer);
+            }
+        }
+
+        // 更新录音时间
+        function updateRecordingTime() {
+            const elapsedTime = Math.floor((Date.now() - recordingStartTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+            const seconds = (elapsedTime % 60).toString().padStart(2, '0');
+            document.getElementById("recordingTime").textContent = `${minutes}:${seconds}`;
+
+            recordingTimer = setTimeout(updateRecordingTime, 1000);
+        }
+
+        // 文本格式化
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            diaryContent.focus();
+        }
+
+        // 添加标签
+        function addTag() {
+            const tag = prompt("请输入标签（无空格）:");
+            if (tag && tag.trim()) {
+                insertContent(`<span class="inline-block px-2 py-0.5 bg-primary/10 text-primary text-sm rounded-full mx-0.5">#${tag.trim()}</span>`);
+            }
+        }
+
+        // 插入内容到日记
+        function insertContent(content) {
+            const selection = window.getSelection();
+            if (selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = content;
+
+                while (tempDiv.firstChild) {
+                    range.insertNode(tempDiv.firstChild);
+                }
+
+                // 移动光标到插入内容后面
+                range.setStartAfter(tempDiv.lastChild);
+                range.setEndAfter(tempDiv.lastChild);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                // 如果没有选中区域，直接添加到末尾
+                diaryContent.innerHTML += content;
+            }
+
+            // 聚焦到内容区
+            diaryContent.focus();
+
+            // 滚动到底部
+            diaryContent.scrollTop = diaryContent.scrollHeight;
+        }
+
+        // 获取地理位置
+        function getLocation() {
+            if (navigator.geolocation) {
+                const locationInput = document.getElementById("location");
+                locationInput.value = "正在获取位置...";
+
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        // 这里可以调用逆地理编码API获取具体地址
+                        // 简化处理，直接显示坐标
+                        locationInput.value = `纬度: ${position.coords.latitude.toFixed(2)}, 经度: ${position.coords.longitude.toFixed(2)}`;
+                    },
+                    error => {
+                        console.error("获取位置失败:", error);
+                        locationInput.value = "获取位置失败，请手动输入";
+                    }
+                );
+            } else {
+                alert("您的浏览器不支持地理位置功能");
+            }
+        }
+
+        // 保存日记
+        function saveDiary() {
+            const time = document.getElementById("time").value;
+            const weather = document.getElementById("weather").value;
+            const mood = document.getElementById("mood").value;
+            const location = document.getElementById("location").value;
+            const content = diaryContent.innerHTML;
+
+            if (!time || !content.trim()) {
+                alert("请填写时间和日记内容");
+                return;
+            }
+
+            // 创建日记对象
+            const diary = {
+                id: Date.now(),
+                time,
+                weather,
+                mood,
+                location,
+                content,
+                createdAt: new Date().toISOString()
+            };
+
+            // 从本地存储获取现有日记
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+
+            // 添加新日记
+            diaries.unshift(diary);
+
+            // 保存到本地存储
+            localStorage.setItem('diaries', JSON.stringify(diaries));
+
+            // 更新日记列表
+            loadDiaries();
+
+            // 清空表单
+            clearAll();
+
+            // 显示成功提示
+            alert("日记保存成功！");
+        }
+
+        // 加载保存的日记
+        function loadDiaries() {
+            const diaryList = document.getElementById("diaryList");
+            const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+
+            if (diaries.length === 0) {
+                diaryList.innerHTML = '<p class="text-gray-500 text-center py-6">暂无保存的日记</p>';
+                return;
+            }
+
+            diaryList.innerHTML = '';
+
+            diaries.forEach(diary => {
+                // 格式化日期显示
+                const date = new Date(diary.time);
+                const formattedDate = date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // 创建日记卡片
+                const diaryCard = document.createElement('div');
+                diaryCard.className = 'bg-white p-4 rounded-xl diary-shadow hover:shadow-md transition-all';
+                diaryCard.innerHTML = `
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <h3 class="font-medium">${formattedDate}</h3>
+                  <div class="flex gap-4 mt-1 text-sm">
+                    <span>${diary.weather}</span>
+                    <span>${diary.mood}</span>
+                    ${diary.location ? `<span><i class="fa fa-map-marker text-gray-400"></i> ${diary.location}</span>` : ''}
+                  </div>
+                </div>
+                <div class="flex gap-1">
+                  <button onclick="editDiary(${diary.id})" class="p-1 text-gray-500 hover:text-primary" title="编辑">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button onclick="deleteDiary(${diary.id})" class="p-1 text-gray-500 hover:text-red-500" title="删除">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="diary-preview text-sm text-gray-700 border-t border-gray-100 pt-3">
+                ${diary.content.length > 150 ?
+                        `${diary.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...` :
+                        diary.content.replace(/<[^>]*>?/gm, '')}
+              </div>
+              <button onclick="viewDiary(${diary.id})" class="mt-3 text-primary text-sm hover:underline">查看全文</button>
+            `;
+
+                diaryList.appendChild(diaryCard);
+            });
+        }
+
+        // 查看日记详情
+        function viewDiary(id) {
+            const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id === id);
+
+            if (!diary) return;
+
+            // 创建详情模态框
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in';
+            modal.innerHTML = `
+            <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                  <h2 class="text-xl font-bold">日记详情</h2>
+                  <button onclick="this.closest('.fixed').remove()" class="p-2 hover:bg-gray-100 rounded-full">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+                <div class="flex flex-wrap gap-4 mt-3 text-sm">
+                  <span><i class="fa fa-clock-o text-gray-400 mr-1"></i> ${new Date(diary.time).toLocaleString()}</span>
+                  <span>${diary.weather}</span>
+                  <span>${diary.mood}</span>
+                  ${diary.location ? `<span><i class="fa fa-map-marker text-gray-400 mr-1"></i> ${diary.location}</span>` : ''}
+                </div>
+              </div>
+              <div class="p-6">
+                ${diary.content}
+              </div>
+            </div>
+          `;
+
+            document.body.appendChild(modal);
+        }
+
+        // 编辑日记
+        function editDiary(id) {
+            const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diaryIndex = diaries.findIndex(d => d.id === id);
+
+            if (diaryIndex === -1) return;
+
+            const diary = diaries[diaryIndex];
+
+            // 填充表单
+            document.getElementById("time").value = diary.time;
+            document.getElementById("weather").value = diary.weather;
+            document.getElementById("mood").value = diary.mood;
+            document.getElementById("location").value = diary.location;
+            diaryContent.innerHTML = diary.content;
+
+            // 删除原日记
+            diaries.splice(diaryIndex, 1);
+            localStorage.setItem('diaries', JSON.stringify(diaries));
+
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 删除日记
+        function deleteDiary(id) {
+            if (confirm("确定要删除这篇日记吗？")) {
+                let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                diaries = diaries.filter(d => d.id !== id);
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                loadDiaries();
+            }
+        }
+
+        // 清空所有内容
+        function clearAll() {
+            if (confirm("确定要清空所有内容吗？")) {
+                document.getElementById("time").value = new Date().toISOString().slice(0, 16);
+                document.getElementById("weather").selectedIndex = 0;
+                document.getElementById("mood").selectedIndex = 0;
+                document.getElementById("location").value = "";
+                diaryContent.innerHTML = "";
+                clearCanvas();
+                document.getElementById("emojiPanel").classList.add("hidden");
+                document.getElementById("doodlePanel").classList.add("hidden");
+            }
+        }
+    </script>
+</body>
+</html>

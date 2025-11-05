@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #aaffff, #ff00ff);
+      background-size: 400% 400%;
+      transition: background 0.5s ease;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .bg-decoration {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+	
+	.bg-decoration svg {
+	  width: 100%;
+	  height: 100%;
+	  object-fit: cover;
+	}
+
+    .bg-decoration.second {
+      opacity: 0.08;
+      transform: rotate(45deg) scale(1.2);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-size: 24px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border-radius: 8px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-group.full-width {
+      flex: 100%;
+      margin-bottom: 15px;
+    }
+
+    .form-group:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    label {
+      font-weight: 500;
+      color: #444;
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #6b8fe8;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.3);
+    }
+
+    #diary-content {
+      min-height: 180px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+      width: 100%;
+      resize: vertical;
+    }
+
+    #canvas {
+      border: 1px solid #aaa;
+      cursor: crosshair;
+      background-color: white;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .toolbar label {
+      margin-bottom: 0;
+      font-weight: 500;
+      color: #444;
+    }
+
+    .emoji-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .toolbar button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: rgba(194, 89, 185, 0.7);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toolbar button:hover {
+      background-color: rgba(194, 89, 185, 0.9);
+      transform: translateY(-2px);
+    }
+
+    .file-upload {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-upload input {
+      position: absolute;
+      font-size: 100px;
+      opacity: 0;
+      right: 0;
+      top: 0;
+      cursor: pointer;
+      width: auto;
+      padding: 0;
+    }
+
+    .file-button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: rgba(74, 144, 226, 0.7);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      display: inline-block;
+    }
+
+    .file-button:hover {
+      background-color: rgba(74, 144, 226, 0.9);
+      transform: translateY(-2px);
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    button#insertDoodle {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: rgba(74, 144, 226, 0.7);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: white;
+    }
+
+    button#insertDoodle:hover {
+      background-color: rgba(74, 144, 226, 0.9);
+      transform: translateY(-2px);
+    }
+
+    .doodle-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- 第一个SVG装饰层 -->
+  <div class="bg-decoration">
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" viewBox="0 0 1422 800">
+        <g stroke-width="3.5" stroke="hsl(335, 77%, 50%)" fill="none" stroke-linecap="butt">
+			<line x1="0" y1="0" x2="54" y2="54"></line>	<line x1="54" y1="0" x2="108" y2="54"></line><line x1="162" y1="0" x2="108" y2="54"></line><line x1="216" y1="0" x2="162" y2="54"></line><line x1="216" y1="0" x2="270" y2="54"></line><line x1="270" y1="0" x2="324" y2="54"></line><line x1="324" y1="0" x2="378" y2="54"></line><line x1="432" y1="0" x2="378" y2="54"></line><line x1="486" y1="0" x2="432" y2="54"></line><line x1="540" y1="0" x2="486" y2="54"></line><line x1="540" y1="0" x2="594" y2="54"></line><line x1="594" y1="0" x2="648" y2="54"></line><line x1="648" y1="0" x2="702" y2="54"></line><line x1="702" y1="0" x2="756" y2="54"></line><line x1="810" y1="0" x2="756" y2="54"></line><line x1="810" y1="0" x2="864" y2="54"></line><line x1="864" y1="0" x2="918" y2="54"></line><line x1="918" y1="0" x2="972" y2="54"></line><line x1="972" y1="0" x2="1026" y2="54"></line><line x1="1080" y1="0" x2="1026" y2="54"></line><line x1="1134" y1="0" x2="1080" y2="54"></line><line x1="1188" y1="0" x2="1134" y2="54"></line><line x1="1188" y1="0" x2="1242" y2="54"></line><line x1="1242" y1="0" x2="1296" y2="54"></line><line x1="1296" y1="0" x2="1350" y2="54"></line><line x1="1350" y1="0" x2="1404" y2="54"></line><line x1="1458" y1="0" x2="1404" y2="54"></line><line x1="0" y1="54" x2="54" y2="108"></line><line x1="54" y1="54" x2="108" y2="108"></line><line x1="108" y1="54" x2="162" y2="108"></line><line x1="162" y1="54" x2="216" y2="108"></line><line x1="270" y1="54" x2="216" y2="108"></line><line x1="324" y1="54" x2="270" y2="108"></line><line x1="378" y1="54" x2="324" y2="108"></line><line x1="432" y1="54" x2="378" y2="108"></line><line x1="486" y1="54" x2="432" y2="108"></line><line x1="486" y1="54" x2="540" y2="108"></line><line x1="594" y1="54" x2="540" y2="108"></line><line x1="594" y1="54" x2="648" y2="108"></line><line x1="702" y1="54" x2="648" y2="108"></line><line x1="756" y1="54" x2="702" y2="108"></line><line x1="810" y1="54" x2="756" y2="108"></line><line x1="864" y1="54" x2="810" y2="108"></line><line x1="918" y1="54" x2="864" y2="108"></line><line x1="918" y1="54" x2="972" y2="108"></line><line x1="972" y1="54" x2="1026" y2="108"></line><line x1="1080" y1="54" x2="1026" y2="108"></line><line x1="1134" y1="54" x2="1080" y2="108"></line><line x1="1188" y1="54" x2="1134" y2="108"></line><line x1="1188" y1="54" x2="1242" y2="108"></line><line x1="1242" y1="54" x2="1296" y2="108"></line><line x1="1350" y1="54" x2="1296" y2="108"></line><line x1="1404" y1="54" x2="1350" y2="108"></line><line x1="1458" y1="54" x2="1404" y2="108"></line><line x1="0" y1="108" x2="54" y2="162"></line><line x1="108" y1="108" x2="54" y2="162"></line><line x1="108" y1="108" x2="162" y2="162"></line><line x1="216" y1="108" x2="162" y2="162"></line><line x1="270" y1="108" x2="216" y2="162"></line><line x1="270" y1="108" x2="324" y2="162"></line><line x1="324" y1="108" x2="378" y2="162"></line><line x1="378" y1="108" x2="432" y2="162"></line><line x1="432" y1="108" x2="486" y2="162"></line><line x1="540" y1="108" x2="486" y2="162"></line><line x1="540" y1="108" x2="594" y2="162"></line><line x1="594" y1="108" x2="648" y2="162"></line><line x1="702" y1="108" x2="648" y2="162"></line><line x1="702" y1="108" x2="756" y2="162"></line><line x1="756" y1="108" x2="810" y2="162"></line><line x1="864" y1="108" x2="810" y2="162"></line><line x1="864" y1="108" x2="918" y2="162"></line><line x1="972" y1="108" x2="918" y2="162"></line><line x1="972" y1="108" x2="1026" y2="162"></line><line x1="1026" y1="108" x2="1080" y2="162"></line><line x1="1134" y1="108" x2="1080" y2="162"></line><line x1="1134" y1="108" x2="1188" y2="162"></line><line x1="1242" y1="108" x2="1188" y2="162"></line><line x1="1296" y1="108" x2="1242" y2="162"></line><line x1="1296" y1="108" x2="1350" y2="162"></line><line x1="1404" y1="108" x2="1350" y2="162"></line><line x1="1404" y1="108" x2="1458" y2="162"></line><line x1="54" y1="162" x2="0" y2="216"></line><line x1="108" y1="162" x2="54" y2="216"></line><line x1="108" y1="162" x2="162" y2="216"></line><line x1="216" y1="162" x2="162" y2="216"></line><line x1="216" y1="162" x2="270" y2="216"></line><line x1="324" y1="162" x2="270" y2="216"></line><line x1="378" y1="162" x2="324" y2="216"></line><line x1="432" y1="162" x2="378" y2="216"></line><line x1="432" y1="162" x2="486" y2="216"></line><line x1="486" y1="162" x2="540" y2="216"></line><line x1="594" y1="162" x2="540" y2="216"></line><line x1="648" y1="162" x2="594" y2="216"></line><line x1="702" y1="162" x2="648" y2="216"></line><line x1="702" y1="162" x2="756" y2="216"></line><line x1="810" y1="162" x2="756" y2="216"></line><line x1="864" y1="162" x2="810" y2="216"></line><line x1="864" y1="162" x2="918" y2="216"></line><line x1="972" y1="162" x2="918" y2="216"></line><line x1="972" y1="162" x2="1026" y2="216"></line><line x1="1080" y1="162" x2="1026" y2="216"></line><line x1="1134" y1="162" x2="1080" y2="216"></line><line x1="1134" y1="162" x2="1188" y2="216"></line><line x1="1242" y1="162" x2="1188" y2="216"></line><line x1="1242" y1="162" x2="1296" y2="216"></line><line x1="1296" y1="162" x2="1350" y2="216"></line><line x1="1404" y1="162" x2="1350" y2="216"></line><line x1="1404" y1="162" x2="1458" y2="216"></line><line x1="0" y1="216" x2="54" y2="270"></line><line x1="108" y1="216" x2="54" y2="270"></line><line x1="162" y1="216" x2="108" y2="270"></line><line x1="162" y1="216" x2="216" y2="270"></line><line x1="216" y1="216" x2="270" y2="270"></line><line x1="324" y1="216" x2="270" y2="270"></line><line x1="378" y1="216" x2="324" y2="270"></line><line x1="378" y1="216" x2="432" y2="270"></line><line x1="432" y1="216" x2="486" y2="270"></line><line x1="540" y1="216" x2="486" y2="270"></line><line x1="540" y1="216" x2="594" y2="270"></line><line x1="594" y1="216" x2="648" y2="270"></line><line x1="702" y1="216" x2="648" y2="270"></line><line x1="702" y1="216" x2="756" y2="270"></line><line x1="810" y1="216" x2="756" y2="270"></line><line x1="810" y1="216" x2="864" y2="270"></line><line x1="864" y1="216" x2="918" y2="270"></line><line x1="972" y1="216" x2="918" y2="270"></line><line x1="1026" y1="216" x2="972" y2="270"></line><line x1="1026" y1="216" x2="1080" y2="270"></line><line x1="1134" y1="216" x2="1080" y2="270"></line><line x1="1134" y1="216" x2="1188" y2="270"></line><line x1="1242" y1="216" x2="1188" y2="270"></line><line x1="1296" y1="216" x2="1242" y2="270"></line><line x1="1296" y1="216" x2="1350" y2="270"></line><line x1="1404" y1="216" x2="1350" y2="270"></line><line x1="1458" y1="216" x2="1404" y2="270"></line><line x1="0" y1="270" x2="54" y2="324"></line><line x1="54" y1="270" x2="108" y2="324"></line><line x1="162" y1="270" x2="108" y2="324"></line><line x1="216" y1="270" x2="162" y2="324"></line><line x1="270" y1="270" x2="216" y2="324"></line><line x1="324" y1="270" x2="270" y2="324"></line><line x1="378" y1="270" x2="324" y2="324"></line><line x1="432" y1="270" x2="378" y2="324"></line><line x1="432" y1="270" x2="486" y2="324"></line><line x1="486" y1="270" x2="540" y2="324"></line><line x1="540" y1="270" x2="594" y2="324"></line><line x1="648" y1="270" x2="594" y2="324"></line><line x1="648" y1="270" x2="702" y2="324"></line><line x1="702" y1="270" x2="756" y2="324"></line><line x1="756" y1="270" x2="810" y2="324"></line><line x1="864" y1="270" x2="810" y2="324"></line><line x1="918" y1="270" x2="864" y2="324"></line><line x1="972" y1="270" x2="918" y2="324"></line><line x1="972" y1="270" x2="1026" y2="324"></line><line x1="1026" y1="270" x2="1080" y2="324"></line><line x1="1080" y1="270" x2="1134" y2="324"></line><line x1="1134" y1="270" x2="1188" y2="324"></line><line x1="1188" y1="270" x2="1242" y2="324"></line><line x1="1296" y1="270" x2="1242" y2="324"></line><line x1="1296" y1="270" x2="1350" y2="324"></line><line x1="1350" y1="270" x2="1404" y2="324"></line><line x1="1458" y1="270" x2="1404" y2="324"></line><line x1="0" y1="324" x2="54" y2="378"></line><line x1="54" y1="324" x2="108" y2="378"></line><line x1="108" y1="324" x2="162" y2="378"></line><line x1="162" y1="324" x2="216" y2="378"></line><line x1="216" y1="324" x2="270" y2="378"></line><line x1="270" y1="324" x2="324" y2="378"></line><line x1="324" y1="324" x2="378" y2="378"></line><line x1="378" y1="324" x2="432" y2="378"></line><line x1="432" y1="324" x2="486" y2="378"></line><line x1="486" y1="324" x2="540" y2="378"></line><line x1="594" y1="324" x2="540" y2="378"></line><line x1="648" y1="324" x2="594" y2="378"></line><line x1="648" y1="324" x2="702" y2="378"></line><line x1="702" y1="324" x2="756" y2="378"></line><line x1="756" y1="324" x2="810" y2="378"></line><line x1="810" y1="324" x2="864" y2="378"></line><line x1="864" y1="324" x2="918" y2="378"></line><line x1="918" y1="324" x2="972" y2="378"></line><line x1="1026" y1="324" x2="972" y2="378"></line><line x1="1080" y1="324" x2="1026" y2="378"></line><line x1="1080" y1="324" x2="1134" y2="378"></line><line x1="1188" y1="324" x2="1134" y2="378"></line><line x1="1242" y1="324" x2="1188" y2="378"></line><line x1="1242" y1="324" x2="1296" y2="378"></line><line x1="1296" y1="324" x2="1350" y2="378"></line><line x1="1350" y1="324" x2="1404" y2="378"></line><line x1="1458" y1="324" x2="1404" y2="378"></line><line x1="54" y1="378" x2="0" y2="432"></line><line x1="108" y1="378" x2="54" y2="432"></line><line x1="108" y1="378" x2="162" y2="432"></line><line x1="162" y1="378" x2="216" y2="432"></line><line x1="216" y1="378" x2="270" y2="432"></line><line x1="324" y1="378" x2="270" y2="432"></line><line x1="378" y1="378" x2="324" y2="432"></line><line x1="432" y1="378" x2="378" y2="432"></line><line x1="486" y1="378" x2="432" y2="432"></line><line x1="540" y1="378" x2="486" y2="432"></line><line x1="540" y1="378" x2="594" y2="432"></line><line x1="594" y1="378" x2="648" y2="432"></line><line x1="702" y1="378" x2="648" y2="432"></line><line x1="702" y1="378" x2="756" y2="432"></line><line x1="810" y1="378" x2="756" y2="432"></line><line x1="810" y1="378" x2="864" y2="432"></line><line x1="864" y1="378" x2="918" y2="432"></line><line x1="972" y1="378" x2="918" y2="432"></line><line x1="1026" y1="378" x2="972" y2="432"></line><line x1="1026" y1="378" x2="1080" y2="432"></line><line x1="1080" y1="378" x2="1134" y2="432"></line><line x1="1188" y1="378" x2="1134" y2="432"></line><line x1="1242" y1="378" x2="1188" y2="432"></line><line x1="1296" y1="378" x2="1242" y2="432"></line><line x1="1296" y1="378" x2="1350" y2="432"></line><line x1="1350" y1="378" x2="1404" y2="432"></line><line x1="1404" y1="378" x2="1458" y2="432"></line><line x1="54" y1="432" x2="0" y2="486"></line><line x1="108" y1="432" x2="54" y2="486"></line><line x1="108" y1="432" x2="162" y2="486"></line><line x1="162" y1="432" x2="216" y2="486"></line><line x1="216" y1="432" x2="270" y2="486"></line><line x1="324" y1="432" x2="270" y2="486"></line><line x1="324" y1="432" x2="378" y2="486"></line><line x1="378" y1="432" x2="432" y2="486"></line><line x1="432" y1="432" x2="486" y2="486"></line><line x1="540" y1="432" x2="486" y2="486"></line><line x1="540" y1="432" x2="594" y2="486"></line><line x1="648" y1="432" x2="594" y2="486"></line><line x1="702" y1="432" x2="648" y2="486"></line><line x1="756" y1="432" x2="702" y2="486"></line><line x1="810" y1="432" x2="756" y2="486"></line><line x1="810" y1="432" x2="864" y2="486"></line><line x1="864" y1="432" x2="918" y2="486"></line><line x1="918" y1="432" x2="972" y2="486"></line><line x1="972" y1="432" x2="1026" y2="486"></line><line x1="1026" y1="432" x2="1080" y2="486"></line><line x1="1080" y1="432" x2="1134" y2="486"></line><line x1="1134" y1="432" x2="1188" y2="486"></line><line x1="1242" y1="432" x2="1188" y2="486"></line><line x1="1242" y1="432" x2="1296" y2="486"></line><line x1="1350" y1="432" x2="1296" y2="486"></line><line x1="1350" y1="432" x2="1404" y2="486"></line><line x1="1404" y1="432" x2="1458" y2="486"></line><line x1="0" y1="486" x2="54" y2="540"></line><line x1="108" y1="486" x2="54" y2="540"></line><line x1="108" y1="486" x2="162" y2="540"></line><line x1="162" y1="486" x2="216" y2="540"></line><line x1="270" y1="486" x2="216" y2="540"></line><line x1="324" y1="486" x2="270" y2="540"></line><line x1="378" y1="486" x2="324" y2="540"></line><line x1="432" y1="486" x2="378" y2="540"></line><line x1="486" y1="486" x2="432" y2="540"></line><line x1="540" y1="486" x2="486" y2="540"></line><line x1="594" y1="486" x2="540" y2="540"></line><line x1="648" y1="486" x2="594" y2="540"></line><line x1="648" y1="486" x2="702" y2="540"></line><line x1="702" y1="486" x2="756" y2="540"></line><line x1="756" y1="486" x2="810" y2="540"></line><line x1="810" y1="486" x2="864" y2="540"></line><line x1="864" y1="486" x2="918" y2="540"></line><line x1="918" y1="486" x2="972" y2="540"></line><line x1="972" y1="486" x2="1026" y2="540"></line><line x1="1080" y1="486" x2="1026" y2="540"></line><line x1="1134" y1="486" x2="1080" y2="540"></line><line x1="1188" y1="486" x2="1134" y2="540"></line><line x1="1242" y1="486" x2="1188" y2="540"></line><line x1="1296" y1="486" x2="1242" y2="540"></line><line x1="1296" y1="486" x2="1350" y2="540"></line><line x1="1350" y1="486" x2="1404" y2="540"></line><line x1="1404" y1="486" x2="1458" y2="540"></line><line x1="54" y1="540" x2="0" y2="594"></line><line x1="108" y1="540" x2="54" y2="594"></line><line x1="108" y1="540" x2="162" y2="594"></line><line x1="216" y1="540" x2="162" y2="594"></line><line x1="216" y1="540" x2="270" y2="594"></line><line x1="270" y1="540" x2="324" y2="594"></line><line x1="324" y1="540" x2="378" y2="594"></line><line x1="432" y1="540" x2="378" y2="594"></line><line x1="432" y1="540" x2="486" y2="594"></line><line x1="486" y1="540" x2="540" y2="594"></line><line x1="540" y1="540" x2="594" y2="594"></line><line x1="648" y1="540" x2="594" y2="594"></line><line x1="648" y1="540" x2="702" y2="594"></line><line x1="756" y1="540" x2="702" y2="594"></line><line x1="756" y1="540" x2="810" y2="594"></line><line x1="810" y1="540" x2="864" y2="594"></line><line x1="918" y1="540" x2="864" y2="594"></line><line x1="972" y1="540" x2="918" y2="594"></line><line x1="1026" y1="540" x2="972" y2="594"></line><line x1="1026" y1="540" x2="1080" y2="594"></line><line x1="1080" y1="540" x2="1134" y2="594"></line><line x1="1134" y1="540" x2="1188" y2="594"></line><line x1="1188" y1="540" x2="1242" y2="594"></line><line x1="1296" y1="540" x2="1242" y2="594"></line><line x1="1296" y1="540" x2="1350" y2="594"></line><line x1="1404" y1="540" x2="1350" y2="594"></line><line x1="1404" y1="540" x2="1458" y2="594"></line><line x1="54" y1="594" x2="0" y2="648"></line><line x1="108" y1="594" x2="54" y2="648"></line><line x1="162" y1="594" x2="108" y2="648"></line><line x1="216" y1="594" x2="162" y2="648"></line><line x1="270" y1="594" x2="216" y2="648"></line><line x1="270" y1="594" x2="324" y2="648"></line><line x1="324" y1="594" x2="378" y2="648"></line><line x1="432" y1="594" x2="378" y2="648"></line><line x1="432" y1="594" x2="486" y2="648"></line><line x1="486" y1="594" x2="540" y2="648"></line><line x1="594" y1="594" x2="540" y2="648"></line><line x1="648" y1="594" x2="594" y2="648"></line><line x1="648" y1="594" x2="702" y2="648"></line><line x1="756" y1="594" x2="702" y2="648"></line><line x1="756" y1="594" x2="810" y2="648"></line><line x1="864" y1="594" x2="810" y2="648"></line><line x1="918" y1="594" x2="864" y2="648"></line><line x1="918" y1="594" x2="972" y2="648"></line><line x1="972" y1="594" x2="1026" y2="648"></line><line x1="1080" y1="594" x2="1026" y2="648"></line><line x1="1134" y1="594" x2="1080" y2="648"></line><line x1="1134" y1="594" x2="1188" y2="648"></line><line x1="1242" y1="594" x2="1188" y2="648"></line><line x1="1296" y1="594" x2="1242" y2="648"></line><line x1="1296" y1="594" x2="1350" y2="648"></line><line x1="1350" y1="594" x2="1404" y2="648"></line><line x1="1404" y1="594" x2="1458" y2="648"></line><line x1="0" y1="648" x2="54" y2="702"></line><line x1="54" y1="648" x2="108" y2="702"></line><line x1="162" y1="648" x2="108" y2="702"></line><line x1="162" y1="648" x2="216" y2="702"></line><line x1="270" y1="648" x2="216" y2="702"></line><line x1="270" y1="648" x2="324" y2="702"></line><line x1="378" y1="648" x2="324" y2="702"></line><line x1="432" y1="648" x2="378" y2="702"></line><line x1="486" y1="648" x2="432" y2="702"></line><line x1="486" y1="648" x2="540" y2="702"></line><line x1="594" y1="648" x2="540" y2="702"></line><line x1="648" y1="648" x2="594" y2="702"></line><line x1="648" y1="648" x2="702" y2="702"></line><line x1="702" y1="648" x2="756" y2="702"></line><line x1="756" y1="648" x2="810" y2="702"></line><line x1="810" y1="648" x2="864" y2="702"></line><line x1="918" y1="648" x2="864" y2="702"></line><line x1="972" y1="648" x2="918" y2="702"></line><line x1="972" y1="648" x2="1026" y2="702"></line><line x1="1080" y1="648" x2="1026" y2="702"></line><line x1="1080" y1="648" x2="1134" y2="702"></line><line x1="1188" y1="648" x2="1134" y2="702"></line><line x1="1188" y1="648" x2="1242" y2="702"></line><line x1="1242" y1="648" x2="1296" y2="702"></line><line x1="1350" y1="648" x2="1296" y2="702"></line><line x1="1404" y1="648" x2="1350" y2="702"></line><line x1="1404" y1="648" x2="1458" y2="702"></line><line x1="54" y1="702" x2="0" y2="756"></line><line x1="54" y1="702" x2="108" y2="756"></line><line x1="162" y1="702" x2="108" y2="756"></line><line x1="216" y1="702" x2="162" y2="756"></line><line x1="270" y1="702" x2="216" y2="756"></line><line x1="324" y1="702" x2="270" y2="756"></line><line x1="378" y1="702" x2="324" y2="756"></line><line x1="378" y1="702" x2="432" y2="756"></line><line x1="432" y1="702" x2="486" y2="756"></line><line x1="486" y1="702" x2="540" y2="756"></line><line x1="594" y1="702" x2="540" y2="756"></line><line x1="594" y1="702" x2="648" y2="756"></line><line x1="648" y1="702" x2="702" y2="756"></line><line x1="702" y1="702" x2="756" y2="756"></line><line x1="756" y1="702" x2="810" y2="756"></line><line x1="810" y1="702" x2="864" y2="756"></line><line x1="918" y1="702" x2="864" y2="756"></line><line x1="972" y1="702" x2="918" y2="756"></line><line x1="1026" y1="702" x2="972" y2="756"></line><line x1="1026" y1="702" x2="1080" y2="756"></line><line x1="1080" y1="702" x2="1134" y2="756"></line><line x1="1188" y1="702" x2="1134" y2="756"></line><line x1="1188" y1="702" x2="1242" y2="756"></line><line x1="1296" y1="702" x2="1242" y2="756"></line><line x1="1296" y1="702" x2="1350" y2="756"></line><line x1="1404" y1="702" x2="1350" y2="756"></line><line x1="1404" y1="702" x2="1458" y2="756"></line><line x1="54" y1="756" x2="0" y2="810"></line><line x1="54" y1="756" x2="108" y2="810"></line><line x1="108" y1="756" x2="162" y2="810"></line><line x1="216" y1="756" x2="162" y2="810"></line><line x1="216" y1="756" x2="270" y2="810"></line><line x1="324" y1="756" x2="270" y2="810"></line><line x1="378" y1="756" x2="324" y2="810"></line><line x1="432" y1="756" x2="378" y2="810"></line><line x1="486" y1="756" x2="432" y2="810"></line><line x1="486" y1="756" x2="540" y2="810"></line><line x1="540" y1="756" x2="594" y2="810"></line><line x1="594" y1="756" x2="648" y2="810"></line><line x1="702" y1="756" x2="648" y2="810"></line><line x1="702" y1="756" x2="756" y2="810"></line><line x1="756" y1="756" x2="810" y2="810"></line><line x1="810" y1="756" x2="864" y2="810"></line><line x1="864" y1="756" x2="918" y2="810"></line><line x1="972" y1="756" x2="918" y2="810"></line><line x1="972" y1="756" x2="1026" y2="810"></line><line x1="1080" y1="756" x2="1026" y2="810"></line><line x1="1080" y1="756" x2="1134" y2="810"></line><line x1="1134" y1="756" x2="1188" y2="810"></line><line x1="1188" y1="756" x2="1242" y2="810"></line><line x1="1242" y1="756" x2="1296" y2="810"></line><line x1="1350" y1="756" x2="1296" y2="810"></line><line x1="1350" y1="756" x2="1404" y2="810"></line><line x1="1404" y1="756" x2="1458" y2="810"></line>
+		</g>
+	</svg>
+  </div>
+
+  <div class="container">
+    <h1>我的多媒体日记</h1>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>时间</label>
+        <input type="datetime-local" id="time">
+      </div>
+      <div class="form-group">
+        <label>天气</label>
+        <select id="weather">
+          <option>☀️ 晴</option>
+          <option>⛅ 多云</option>
+          <option>🌧️ 雨</option>
+          <option>🌨️ 雪</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>心情</label>
+        <select id="mood">
+          <option>😊 开心</option>
+          <option>😔 难过</option>
+          <option>😠 生气</option>
+          <option>😌 平静</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>地点</label>
+        <input type="text" id="location" placeholder="请输入地点">
+      </div>
+    </div>
+
+    <div class="form-group full-width">
+      <label>事件与感想</label>
+      <div id="diary-content" contenteditable="true"></div>
+    </div>
+
+    <div class="toolbar">
+      <label>添加内容：</label>
+      <div class="emoji-buttons">
+        <button onclick="insertEmoji('😊')">😊</button>
+        <button onclick="insertEmoji('😢')">😢</button>
+        <button onclick="insertEmoji('❤️')">❤️</button>
+        <button onclick="insertEmoji('🎉')">🎉</button>
+        <button onclick="insertEmoji('🌟')">🌟</button>
+      </div>
+      
+      <div class="file-upload">
+        <span class="file-button">📷 图片</span>
+        <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+      </div>
+      
+      <div class="file-upload">
+        <span class="file-button">🎵 音频</span>
+        <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+      </div>
+    </div>
+
+    <div class="form-group full-width doodle-container">
+      <label>涂鸦（绘制后点击插入）</label>
+      <canvas id="canvas" width="600" height="200"></canvas>
+      <button id="insertDoodle" onclick="insertDoodle()">✏️ 插入涂鸦</button>
+    </div>
+  </div>
+
+  <script>
+    // 动态背景效果
+    document.addEventListener('mousemove', (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      
+      const angle = 135 + (x - 0.5) * 40;
+      document.body.style.background = `linear-gradient(${angle}deg, #aaffff, #ff00ff)`;
+      document.body.style.backgroundSize = '400% 400%';
+    });
+
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+      // 保持光标在最后
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.setStartAfter(content.lastChild);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      content.focus();
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"> 您的浏览器不支持音频播放<br>`;
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 2;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+
+    canvas.addEventListener("mousedown", (e) => {
+      drawing = true;
+      const rect = canvas.getBoundingClientRect();
+      [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+    });
+
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      [lastX, lastY] = [x, y];
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 初始化时间为当前
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+    }
+  </script>
+</body>
+</html>

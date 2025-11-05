@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 多媒体日记本</title>
+    <style>
+        /* =====================================
+           1. 全局样式 - 暖色调插画风
+        ===================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI','Microsoft YaHei',sans-serif;
+            background: #E9D0AD;
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: relative;
+        }
+
+            /* 添加装饰性背景元素 */
+            body::before {
+                content: '';
+                position: fixed;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle at 20% 20%, rgba(130, 133, 44, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(185, 128, 19, 0.08) 0%, transparent 50%), radial-gradient(circle at 40% 60%, rgba(166, 63, 1, 0.06) 0%, transparent 50%);
+                z-index: -1;
+                animation: float 20s ease-in-out infinite;
+            }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(-20px, -20px) rotate(1deg);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #836A13;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(131, 106, 19, 0.2);
+            position: relative;
+        }
+
+            h1::after {
+                content: '✨';
+                position: absolute;
+                top: -10px;
+                right: 20px;
+                font-size: 0.6em;
+                animation: sparkle 2s ease-in-out infinite;
+            }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* =====================================
+           2. 主容器
+        ===================================== */
+        .main-container {
+            width: 60%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+        }
+
+        /* =====================================
+           3. 顶部布局
+        ===================================== */
+        .top-section {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+        }
+
+        /* =====================================
+           4. 模块通用样式 - 插画风卡片
+        ===================================== */
+        .module {
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(93, 64, 55, 0.15), 0 4px 10px rgba(76, 175, 80, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+            .module::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: #B98013;
+                border-radius: 20px 20px 0 0;
+            }
+
+            .module:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 15px 35px rgba(131, 106, 19, 0.2), 0 8px 15px rgba(185, 128, 19, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            }
+
+        /* 各模块纯色背景 */
+        .info-module label {
+            color: white;
+        }
+
+            .info-module label::before {
+                background: #E9D0AD;
+            }
+
+        .info-module {
+            flex: 1;
+            background: #B98013;
+        }
+
+        .calendar-module {
+            flex: 1;
+            background: #82852C;
+            height: fit-content;
+        }
+
+            .calendar-module label {
+                color: white;
+            }
+
+                .calendar-module label::before {
+                    background: #E9D0AD;
+                }
+
+        .diary-module {
+            background: #E9D0AD;
+        }
+
+        .doodle-module {
+            background: #B98013;
+        }
+
+            .doodle-module label {
+                color: white;
+            }
+
+                .doodle-module label::before {
+                    background: #E9D0AD;
+                }
+
+            .doodle-module .selector-group label {
+                color: white;
+            }
+
+                .doodle-module .selector-group label::before {
+                    background: #E9D0AD;
+                }
+
+        .toolbar-module {
+            background: #82852C;
+        }
+
+            .toolbar-module label {
+                color: white;
+            }
+
+                .toolbar-module label::before {
+                    background: #E9D0AD;
+                }
+
+        .emoji-module {
+            background: #836A13;
+        }
+
+            .emoji-module label {
+                color: white;
+            }
+
+                .emoji-module label::before {
+                    background: #B98013;
+                }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #836A13;
+            font-size: 1.2em;
+            position: relative;
+            padding-left: 8px;
+        }
+
+            label::before {
+                content: '';
+                position: absolute;
+                left: -8px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 4px;
+                height: 20px;
+                background: #B98013;
+                border-radius: 2px;
+            }
+
+        /* =====================================
+           6. 输入框样式 - 扁平化设计
+        ===================================== */
+        input[type="text"], input[type="datetime-local"], select {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid rgba(185, 128, 19, 0.3);
+            border-radius: 15px;
+            font-size: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(131, 106, 19, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+            color: #836A13;
+        }
+
+            input[type="text"]:focus,
+            input[type="datetime-local"]:focus,
+            select:focus {
+                outline: none;
+                border-color: #B98013;
+                box-shadow: 0 4px 15px rgba(185, 128, 19, 0.3), 0 0 0 3px rgba(185, 128, 19, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+                transform: translateY(-2px);
+            }
+
+            input[type="text"]:hover,
+            input[type="datetime-local"]:hover,
+            select:hover {
+                border-color: #82852C;
+                box-shadow: 0 3px 12px rgba(185, 128, 19, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+            }
+
+        /* =====================================
+           7. 日历网格样式 - 插画风
+        ===================================== */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-weight: 600;
+            color: #836A13;
+            padding: 8px 0;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        .calendar-day {
+            padding: 8px 0;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            background: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(131, 106, 19, 0.1);
+            color: #836A13;
+        }
+
+            .calendar-day:hover {
+                background: rgba(185, 128, 19, 0.2);
+                transform: scale(1.1);
+                box-shadow: 0 4px 12px rgba(185, 128, 19, 0.3);
+            }
+
+            .calendar-day.active {
+                background: #836A13;
+                color: white;
+                font-weight: 600;
+                box-shadow: 0 6px 15px rgba(131, 106, 19, 0.4);
+                transform: scale(1.05);
+            }
+
+            .calendar-day.today {
+                border: 3px solid #ff7043;
+                background: rgba(255, 112, 67, 0.1);
+            }
+
+            .calendar-day.hasDiary::after {
+                content: "🌸";
+                position: absolute;
+                bottom: 3px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 12px;
+                animation: bounce 1s ease-in-out infinite;
+            }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-3px);
+            }
+        }
+
+        /* =====================================
+           8. 日记内容编辑区 - 插画风
+        ===================================== */
+        #diary-content {
+            min-height: 280px;
+            border: 2px solid rgba(185, 128, 19, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            overflow-y: auto;
+            line-height: 1.8;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(131, 106, 19, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+            color: #836A13;
+            transition: all 0.3s ease;
+        }
+
+            #diary-content:focus {
+                outline: none;
+                border-color: #B98013;
+                box-shadow: 0 6px 20px rgba(185, 128, 19, 0.2), 0 0 0 3px rgba(185, 128, 19, 0.1), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+            }
+
+            #diary-content img, #diary-content audio, #diary-content video {
+                max-width: 100%;
+                border-radius: 12px;
+                margin: 15px 0;
+                box-shadow: 0 4px 12px rgba(131, 106, 19, 0.15);
+            }
+
+        /* =====================================
+           9. 表情面板 - 插画风
+        ===================================== */
+        .emoji-panel {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .emoji-item {
+            font-size: 28px;
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(93, 64, 55, 0.1);
+        }
+
+            .emoji-item:hover {
+                transform: scale(1.3) rotate(5deg);
+                background: rgba(139, 195, 74, 0.2);
+                box-shadow: 0 6px 15px rgba(139, 195, 74, 0.3);
+            }
+
+        /* =====================================
+           10. 涂鸦板 - 插画风
+        ===================================== */
+        #canvas {
+            width: 100%;
+            height: 320px;
+            border: 3px solid rgba(139, 195, 74, 0.3);
+            border-radius: 15px;
+            background: white;
+            cursor: crosshair;
+            box-shadow: 0 6px 15px rgba(93, 64, 55, 0.15), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+            #canvas:hover {
+                border-color: #8bc34a;
+                box-shadow: 0 8px 20px rgba(139, 195, 74, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.5);
+            }
+
+        /* =====================================
+           11. 按钮通用样式 - 插画风
+        ===================================== */
+        .button-group button, .file-input-label {
+            margin-top: 15px;
+            margin-right: 12px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(131, 106, 19, 0.2);
+            color: white;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .button-group button::before, .file-input-label::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                transition: left 0.5s;
+            }
+
+            .button-group button:hover::before, .file-input-label:hover::before {
+                left: 100%;
+            }
+
+            .button-group button:hover, .file-input-label:hover {
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 8px 20px rgba(131, 106, 19, 0.3);
+            }
+
+        /* 按钮纯色配色 */
+        .btn-save {
+            background: #E9D0AD;
+        }
+
+        .btn-clear {
+            background: #A63F01;
+        }
+
+        .btn-export {
+            background: #B98013;
+            color: #836A13;
+        }
+
+        .btn-canvas {
+            background: #836A13;
+        }
+
+        .btn-emoji {
+            background: #836A13;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-right: 12px;
+        }
+
+            .file-input-wrapper input[type="file"] {
+                position: absolute;
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+                cursor: pointer;
+            }
+
+        .file-input-label {
+            display: inline-block;
+            background: #836A13;
+        }
+
+        /* =====================================
+           12. 选择器组样式
+        ===================================== */
+        .selector-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+            .selector-group > div {
+                flex: 1;
+            }
+
+            .selector-group label {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+        /* =====================================
+           13. 媒体输入区域
+        ===================================== */
+        .media-input {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* =====================================
+           14. 响应式设计
+        ===================================== */
+        @media (max-width: 1200px) {
+            .main-container {
+                width: 80%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                width: 95%;
+            }
+
+            .top-section {
+                flex-direction: column;
+            }
+
+            .selector-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .media-input {
+                flex-direction: column;
+            }
+
+            .file-input-wrapper {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* =====================================
+           15. 滚动条样式
+        ===================================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(139, 195, 74, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #B98013;
+            border-radius: 4px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #836A13;
+            }
+    </style>
+</head>
+<body>
+    <h1>多媒体日记本</h1>
+
+    <div class="main-container">
+        <!-- 顶部 左侧基本信息+右侧日历 -->
+        <div class="top-section">
+            <div class="module info-module">
+                <label>📋 今日信息</label>
+                <input type="datetime-local" id="time" style="margin-bottom:15px;">
+                <div class="selector-group">
+                    <div>
+                        <label>🌤️ 天气</label>
+                        <select id="weather">
+                            <option>☀️ 晴天</option>
+                            <option>⛅ 多云</option>
+                            <option>🌧️ 雨天</option>
+                            <option>🌨️ 雪天</option>
+                            <option>🌪️ 大风</option>
+                            <option>🌫️ 雾天</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>😊 心情</label>
+                        <select id="mood">
+                            <option>😊 开心</option>
+                            <option>😔 难过</option>
+                            <option>😠 生气</option>
+                            <option>😌 平静</option>
+                            <option>😄 兴奋</option>
+                            <option>😰 焦虑</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="text" id="location" placeholder="📍 今天在哪里？" style="margin-top:15px;">
+            </div>
+
+            <div class="module calendar-module">
+                <label>📅 日历</label>
+                <div class="calendar-grid" id="calendar"></div>
+            </div>
+        </div>
+
+        <!-- 日记内容 -->
+        <div class="module diary-module">
+            <label>📓 日记内容</label>
+            <div id="diary-content" contenteditable="true" placeholder="开始记录今天的美好时光..."></div>
+            <div class="media-input">
+                <div class="file-input-wrapper">
+                    <label class="file-input-label">📷 插入图片</label>
+                    <input type="file" id="imageInput" accept="image/*">
+                </div>
+                <div class="file-input-wrapper">
+                    <label class="file-input-label">🎤 插入语音</label>
+                    <input type="file" id="audioInput" accept="audio/*">
+                </div>
+                <div class="file-input-wrapper">
+                    <label class="file-input-label">🎥 插入视频</label>
+                    <input type="file" id="videoInput" accept="video/*">
+                </div>
+            </div>
+        </div>
+
+        <!-- 表情 -->
+        <div class="module emoji-module">
+            <label>😀 表情插入</label>
+            <div class="emoji-panel" id="emojiPanel"></div>
+        </div>
+
+        <!-- 涂鸦 -->
+        <div class="module doodle-module">
+            <label>🎨 涂鸦板</label>
+            <div class="selector-group">
+                <div>
+                    <label>调色板</label>
+                    <select id="penColor">
+                        <option value="black">⚫ 黑色</option>
+                        <option value="red">🔴 红色</option>
+                        <option value="blue">🔵 蓝色</option>
+                        <option value="green">🟢 绿色</option>
+                        <option value="brown">🟤 棕色</option>
+                        <option value="orange">🟠 橙色</option>
+                    </select>
+                </div>
+                <div>
+                    <label>画笔粗细</label>
+                    <select id="penSize">
+                        <option value="2">细线条</option>
+                        <option value="5">中等</option>
+                        <option value="10">粗线条</option>
+                        <option value="15">超粗</option>
+                    </select>
+                </div>
+            </div>
+            <canvas id="canvas"></canvas>
+            <div class="button-group">
+                <button class="btn-canvas" onclick="clearCanvas()">🗑️ 清空画布</button>
+                <button class="btn-canvas" onclick="insertDoodle()">✅ 插入涂鸦</button>
+            </div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="module toolbar-module">
+            <label>🧰 操作工具栏</label>
+            <div class="button-group">
+                <button class="btn-save" onclick="saveDiary()">💾 保存日记</button>
+                <button class="btn-clear" onclick="clearDiary()">🧹 清空内容</button>
+                <button class="btn-export" onclick="exportDiary()">📤 导出TXT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================
+           1. 日历生成
+        ===================================== */
+        const calendarEl = document.getElementById('calendar');
+        let today = new Date();
+        let selectedDay = today.getDate();
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        let diaryDays = [3, 5, 12]; // 已写日记示例
+
+        function buildCalendar(year, month) {
+            calendarEl.innerHTML = '';
+            const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekDays.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'calendar-header';
+                el.textContent = d;
+                calendarEl.appendChild(el);
+            });
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDay; i++) {
+                calendarEl.appendChild(document.createElement('div'));
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.textContent = d;
+                if (d === selectedDay) dayEl.classList.add('active');
+                if (diaryDays.includes(d)) dayEl.classList.add('hasDiary');
+                if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear())
+                    dayEl.classList.add('today');
+                dayEl.addEventListener('click', () => {
+                    document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('active'));
+                    dayEl.classList.add('active');
+                    selectedDay = d;
+                });
+                calendarEl.appendChild(dayEl);
+            }
+        }
+        buildCalendar(currentYear, currentMonth);
+
+        /* =====================================
+           2. 涂鸦功能
+        ===================================== */
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        // 设置画布尺寸
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 320;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        canvas.addEventListener('mousedown', e => {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        });
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mouseout', () => drawing = false);
+        canvas.addEventListener('mousemove', e => {
+            if (!drawing) return;
+            ctx.strokeStyle = document.getElementById('penColor').value;
+            ctx.lineWidth = document.getElementById('penSize').value;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function insertDoodle() {
+            const dataURL = canvas.toDataURL('image/png');
+            const img = document.createElement('img');
+            img.src = dataURL;
+            img.style.borderRadius = '12px';
+            img.style.boxShadow = '0 4px 12px rgba(93, 64, 55, 0.15)';
+            document.getElementById('diary-content').appendChild(img);
+        }
+
+        /* =====================================
+           3. 表情功能
+        ===================================== */
+        const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😊', '😇', '🙂', '🙃', '😉', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓'];
+        const emojiPanel = document.getElementById('emojiPanel');
+        emojis.forEach(e => {
+            const el = document.createElement('div');
+            el.className = 'emoji-item';
+            el.textContent = e;
+            el.addEventListener('click', () => {
+                const diaryContent = document.getElementById('diary-content');
+                diaryContent.appendChild(document.createTextNode(e));
+                diaryContent.focus();
+            });
+            emojiPanel.appendChild(el);
+        });
+
+        /* =====================================
+           4. 多媒体文件插入
+        ===================================== */
+        function insertFile(inputId, tag) {
+            document.getElementById(inputId).addEventListener('change', function (e) {
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const el = document.createElement(tag);
+                    if (tag === 'audio' || tag === 'video') el.controls = true;
+                    el.src = evt.target.result;
+                    el.style.maxWidth = '100%';
+                    el.style.margin = '15px 0';
+                    el.style.borderRadius = '12px';
+                    el.style.boxShadow = '0 4px 12px rgba(93, 64, 55, 0.15)';
+                    document.getElementById('diary-content').appendChild(el);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+        insertFile('imageInput', 'img');
+        insertFile('audioInput', 'audio');
+        insertFile('videoInput', 'video');
+
+        /* =====================================
+           5. 工具栏按钮
+        ===================================== */
+        function saveDiary() {
+            const diaryContent = document.getElementById('diary-content').innerHTML;
+            if (diaryContent.trim()) {
+                localStorage.setItem('diary_' + new Date().toISOString().split('T')[0], diaryContent);
+                showNotification('日记已保存！', 'success');
+            } else {
+                showNotification('请先输入日记内容', 'warning');
+            }
+        }
+
+        function clearDiary() {
+            if (confirm('确定要清空所有内容吗？')) {
+                document.getElementById('diary-content').innerHTML = '';
+                showNotification('内容已清空', 'info');
+            }
+        }
+
+        function exportDiary() {
+            const diaryContent = document.getElementById('diary-content').innerText;
+            if (diaryContent.trim()) {
+                const blob = new Blob([diaryContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '日记_' + new Date().toISOString().split('T')[0] + '.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+                showNotification('日记已导出！', 'success');
+            } else {
+                showNotification('请先输入日记内容', 'warning');
+            }
+        }
+
+        /* =====================================
+           6. 通知功能
+        ===================================== */
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 10px;
+                    color: white;
+                    font-weight: 600;
+                    z-index: 1000;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                `;
+
+            const colors = {
+                success: 'linear-gradient(135deg, #8bc34a, #4caf50)',
+                warning: 'linear-gradient(135deg, #ff9800, #f57c00)',
+                error: 'linear-gradient(135deg, #f44336, #d32f2f)',
+                info: 'linear-gradient(135deg, #2196f3, #1976d2)'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        /* =====================================
+           7. 初始化
+        ===================================== */
+        document.addEventListener('DOMContentLoaded', function () {
+            // 设置当前时间
+            const now = new Date();
+            const timeInput = document.getElementById('time');
+            timeInput.value = now.toISOString().slice(0, 16);
+
+            // 添加日记内容占位符
+            const diaryContent = document.getElementById('diary-content');
+            diaryContent.addEventListener('focus', function () {
+                if (this.textContent.trim() === '') {
+                    this.innerHTML = '';
+                }
+            });
+
+            diaryContent.addEventListener('blur', function () {
+                if (this.textContent.trim() === '') {
+                    this.innerHTML = '<span style="color: #999; font-style: italic;">开始记录今天的美好时光...</span>';
+                }
+            });
+
+            // 初始化占位符
+            if (diaryContent.textContent.trim() === '') {
+                diaryContent.innerHTML = '<span style="color: #999; font-style: italic;">开始记录今天的美好时光...</span>';
+            }
+        });
+    </script>
+</body>
+</html>

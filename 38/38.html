@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多媒体日记 - 现代化版本</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>我的多媒体日记</h1>
+      <p class="subtitle">记录生活中的每一个精彩瞬间</p>
+    </header>
+    
+    <div class="diary-controls">
+      <div>
+        <button class="btn btn-primary" id="saveBtn">
+          <span>💾</span> 保存日记
+        </button>
+        <button class="btn btn-success" id="newBtn">
+          <span>📝</span> 新建日记
+        </button>
+        <button class="btn btn-warning" id="calendarBtn">
+          <span>📅</span> 日历视图
+        </button>
+      </div>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索日记...">
+        <button class="btn btn-warning" id="toggleListBtn">
+          <span>📚</span> 日记列表
+        </button>
+      </div>
+    </div>
+    
+    <!-- 日历视图 -->
+    <div class="calendar-view" id="calendarView">
+      <div class="calendar-header">
+        <button class="btn btn-primary" id="prevMonthBtn">
+          <span>◀</span> 上月
+        </button>
+        <h2 id="currentMonthYear">2025年10月</h2>
+        <button class="btn btn-primary" id="nextMonthBtn">
+          下月 <span>▶</span>
+        </button>
+      </div>
+      <div class="calendar-weekdays">
+        <div>日</div>
+        <div>一</div>
+        <div>二</div>
+        <div>三</div>
+        <div>四</div>
+        <div>五</div>
+        <div>六</div>
+      </div>
+      <div class="calendar-days" id="calendarDays">
+        <!-- 日历日期将通过JavaScript动态生成 -->
+      </div>
+    </div>
+    
+    <!-- 日记列表视图 -->
+    <div class="diary-list" id="diaryList">
+      <!-- 日记列表将通过JavaScript动态生成 -->
+    </div>
+    
+    <!-- 单日日记列表视图 -->
+    <div class="day-diary-list" id="dayDiaryList">
+      <div class="view-header">
+        <button class="btn btn-primary" id="backFromDayListBtn">
+          <span>◀</span> 返回日历
+        </button>
+        <h2 id="dayDiaryTitle">2025年10月1日的日记</h2>
+      </div>
+      <div class="day-diary-items" id="dayDiaryItems">
+        <!-- 单日日记列表将通过JavaScript动态生成 -->
+      </div>
+    </div>
+    
+    <!-- 日记编辑表单 -->
+    <div class="diary-form" id="diaryForm">
+      <div class="form-group">
+        <label for="time">时间:</label>
+        <input type="datetime-local" id="time">
+      </div>
+      
+      <div class="form-group">
+        <label for="weather">天气:</label>
+        <select id="weather">
+          <option>☀️ 晴</option>
+          <option>⛅ 多云</option>
+          <option>🌧️ 雨</option>
+          <option>🌨️ 雪</option>
+          <option>🌫️ 雾</option>
+          <option>🌪️ 风</option>
+          <option>⛈️ 雷雨</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="mood">心情:</label>
+        <select id="mood">
+          <option>😊 开心</option>
+          <option>😢 难过</option>
+          <option>😠 生气</option>
+          <option>😌 平静</option>
+          <option>😍 兴奋</option>
+          <option>😴 疲惫</option>
+          <option>🤔 思考</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="location">地点:</label>
+        <input type="text" id="location" placeholder="请输入地点">
+      </div>
+      
+      <div class="form-group full-width">
+        <label for="diary-content">事件与感想:</label>
+        <div id="diary-content" contenteditable="true"></div>
+        
+        <div class="toolbar">
+          <div class="toolbar-section">
+            <h3>表情:</h3>
+            <div class="emoji-picker">
+              <span class="emoji" data-emoji="😊">😊</span>
+              <span class="emoji" data-emoji="😂">😂</span>
+              <span class="emoji" data-emoji="❤️">❤️</span>
+              <span class="emoji" data-emoji="👍">👍</span>
+              <span class="emoji" data-emoji="🙏">🙏</span>
+              <span class="emoji" data-emoji="🎉">🎉</span>
+              <span class="emoji" data-emoji="⭐">⭐</span>
+              <span class="emoji" data-emoji="🌈">🌈</span>
+            </div>
+          </div>
+          
+          <div class="toolbar-section">
+            <h3>媒体:</h3>
+            <div class="file-input-wrapper">
+              <button class="btn btn-primary">
+                <span>🖼️</span> 插入图片
+              </button>
+              <input type="file" id="imageInput" accept="image/*">
+            </div>
+            
+            <div class="file-input-wrapper">
+              <button class="btn btn-primary">
+                <span>🎵</span> 插入音频
+              </button>
+              <input type="file" id="audioInput" accept="audio/*">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group full-width">
+        <label>涂鸦板:</label>
+        <div class="canvas-container">
+          <div class="canvas-tools">
+            <div class="color-picker">
+              <div class="color-option active" style="background-color: #000000;" data-color="#000000"></div>
+              <div class="color-option" style="background-color: #ff0000;" data-color="#ff0000"></div>
+              <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+              <div class="color-option" style="background-color: #008000;" data-color="#008000"></div>
+              <div class="color-option" style="background-color: #ffff00;" data-color="#ffff00"></div>
+            </div>
+            
+            <div class="brush-size">
+              <span>笔刷大小:</span>
+              <input type="range" id="brushSize" min="1" max="10" value="2">
+              <span id="brushSizeValue">2px</span>
+            </div>
+            
+            <button class="btn btn-warning" id="clearCanvasBtn">
+              <span>🗑️</span> 清空画布
+            </button>
+          </div>
+          
+          <canvas id="canvas" width="500" height="200"></canvas>
+          
+          <button class="btn btn-success" id="insertDoodleBtn">
+            <span>💾</span> 插入涂鸦
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 日记阅读视图 -->
+    <div class="diary-read-view" id="diaryReadView">
+      <div class="view-header">
+        <button class="btn btn-primary" id="backFromReadViewBtn">
+          <span>◀</span> 返回
+        </button>
+        <h2>日记详情</h2>
+      </div>
+      
+      <div class="diary-read-content">
+        <div class="diary-read-meta">
+          <div class="meta-item">
+            <span class="meta-label">时间:</span>
+            <span id="read-time">2025-10-01 12:00</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">天气:</span>
+            <span id="read-weather">☀️ 晴</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">心情:</span>
+            <span id="read-mood">😊 开心</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">地点:</span>
+            <span id="read-location">家里</span>
+          </div>
+        </div>
+        
+        <div class="diary-read-body">
+          <h3>内容:</h3>
+          <div id="read-content" class="read-content">
+            <!-- 日记内容将在这里显示 -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      <p>多媒体日记本 &copy; 2025 - 记录美好生活</p>
+    </footer>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多媒体日记 (带搜索删除功能)</title>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --content-bg-color: #ffffff;
+      --text-color: #333;
+      --text-muted-color: #666;
+      --border-color: #ccc;
+      --hover-bg-color: #e9f2fa;
+      --toolbar-bg-color: #f7f7f7;
+      --primary-color: #4a90e2;
+      --success-color: #28a745;
+      --info-color: #17a2b8;
+      --danger-color: #dc3545;
+    }
+    html[data-theme="dark"] {
+      --bg-color: #121212;
+      --content-bg-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --text-muted-color: #888;
+      --border-color: #444;
+      --hover-bg-color: #33373a;
+      --toolbar-bg-color: #2a2a2a;
+      --primary-color: #5d9cec;
+      --success-color: #4caf50;
+      --info-color: #4dd0e1;
+      --danger-color: #e57373;
+    }
+
+    body { font-family: 'Arial', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; transition: background-color 0.3s, color 0.3s; }
+    .app-layout { display: flex; min-height: 100vh; }
+    .sidebar { width: 280px; background-color: var(--content-bg-color); border-right: 1px solid var(--border-color); padding: 1rem; display: flex; flex-direction: column; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
+    .sidebar h2 { margin: 0 0 1rem 0; font-size: 1.2rem; text-align: center; }
+    #new-diary-btn { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; margin-bottom: 1rem; }
+    #search-box { width: 100%; padding: 8px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--content-bg-color); color: var(--text-color); box-sizing: border-box; }
+    #diary-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+    .diary-item { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; border-radius: 4px; display: flex; flex-direction: column; gap: 4px; }
+    .diary-item:hover, .diary-item.active { background-color: var(--hover-bg-color); }
+    .diary-item-title { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color); }
+    .diary-item-date { font-size: 0.8rem; color: var(--text-muted-color); }
+    
+    .main-content { flex-grow: 1; padding: 2rem; display: flex; flex-direction: column; position: relative; }
+    #theme-switcher { position: absolute; top: 1.5rem; right: 2rem; background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 5px; border-radius: 50%; color: var(--text-color); }
+    #theme-switcher .sun { display: none; }
+    html[data-theme="dark"] #theme-switcher .sun { display: inline; }
+    html[data-theme="dark"] #theme-switcher .moon { display: none; }
+
+    #diary-title { width: 100%; text-align: center; font-size: 1.8rem; font-weight: bold; border: none; border-bottom: 2px solid var(--border-color); padding: 10px 0; background-color: transparent; outline: none; margin-bottom: 1.5rem; color: var(--text-color); }
+    .editor-area { display: flex; gap: 2rem; flex-grow: 1; }
+    .meta-data, .diary-editor { flex: 1; position: relative; }
+    @media (max-width: 1024px) { .app-layout { flex-direction: column; } .sidebar { width: 100%; height: 300px; border-right: none; border-bottom: 1px solid var(--border-color); } .main-content { padding: 1rem; } }
+    @media (max-width: 768px) { .editor-area { flex-direction: column; } }
+    
+    .form-group { margin-bottom: 1rem; }
+    label { font-weight: bold; display: block; margin-bottom: 0.5rem; }
+    input[type="text"], input[type="datetime-local"], select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; background-color: var(--content-bg-color); color: var(--text-color); }
+    #diary-content { min-height: 250px; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; overflow-y: auto; background-color: var(--content-bg-color); }
+    #diary-content:focus-within { border-color: var(--primary-color); }
+    .toolbar { margin-top: 1rem; padding: 0.5rem; background-color: var(--toolbar-bg-color); border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+    .toolbar button { background: none; border: 1px solid transparent; border-radius: 4px; cursor: pointer; font-size: 1.5rem; padding: 5px; transition: background-color 0.2s; }
+    
+    #emoji-panel { display: none; position: absolute; bottom: 100px; left: 60px; background: var(--content-bg-color); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 10px; z-index: 100; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    #emoji-panel.show { display: grid; }
+    #emoji-panel span { cursor: pointer; font-size: 1.5rem; text-align: center; border-radius: 4px; padding: 2px; }
+    #emoji-panel span:hover { background-color: var(--hover-bg-color); }
+
+    #drop-zone { margin-top: 1rem; border: 2px dashed var(--border-color); border-radius: 6px; padding: 20px; text-align: center; color: var(--text-muted-color); }
+    .bottom-actions { text-align: center; padding: 2rem 0 0 0; display: flex; justify-content: center; gap: 1rem; }
+    .bottom-actions button { padding: 12px 30px; font-size: 1.1rem; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    #save-diary-btn { background-color: var(--success-color); }
+    #share-btn { background-color: var(--info-color); }
+    #delete-diary-btn { background-color: var(--danger-color); }
+    .hidden-input { display: none; }
+    
+    .modal, #lightbox { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+    .modal-content { background-color: var(--content-bg-color); color: var(--text-color); padding: 20px; border-radius: 8px; }
+    #lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+    
+    .doodle-tools { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .color-swatch { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+    .color-swatch.active { border-color: var(--primary-color); }
+    #canvas { border: 1px solid #aaa; cursor: crosshair; }
+    .modal-actions { margin-top: 1rem; text-align: right; }
+    
+    .resizable-wrapper { resize: both; overflow: hidden; display: inline-block; min-width: 100px; min-height: 80px; padding-bottom: 8px; padding-right: 8px; }
+    .media-container { position: relative; width: 100%; height: 100%; }
+    .media-container img, .media-container audio { max-width: 100%; max-height: 100%; display: block; }
+    .view-original-btn { position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; background-color: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .media-container:hover .view-original-btn { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <h2>我的日记本</h2>
+      <button id="new-diary-btn">+ 新建日记</button>
+      <input type="search" id="search-box" placeholder="搜索日记标题...">
+      <ul id="diary-list"></ul>
+    </aside>
+    <main class="main-content">
+      <button id="theme-switcher" title="切换主题"><span class="sun">☀️</span><span class="moon">🌙</span></button>
+      <input type="text" id="diary-title" placeholder="输入日记标题...">
+      <div class="editor-area">
+        <div class="meta-data">
+          <div class="form-group"><label for="time">时间:</label><input type="datetime-local" id="time"></div>
+          <div class="form-group"><label for="weather">天气:</label><select id="weather"><option>☀️ 晴</option><option>⛅ 多云</option><option>🌧️ 雨</option><option>🌨️ 雪</option></select></div>
+          <div class="form-group"><label for="mood">心情:</label><select id="mood"><option>😊 开心</option><option>😔 难过</option><option>😠 生气</option><option>😌 平静</option></select></div>
+          <div class="form-group"><label for="location">地点:</label><input type="text" id="location" placeholder="请输入地点"></div>
+        </div>
+        <div class="diary-editor">
+          <div class="form-group"><label for="diary-content">事件与感想:</label><div id="diary-content" contenteditable="true" data-current-id=""></div></div>
+          <div class="toolbar">
+            <span>插入:</span>
+            <button id="open-emoji-btn" title="插入表情">😊</button>
+            <button id="insert-image-btn" title="插入图片">🖼️</button>
+            <button id="insert-audio-btn" title="插入音频">🎵</button>
+            <button id="open-doodle-modal" title="插入涂鸦">🎨</button>
+          </div>
+          <div id="emoji-panel"></div>
+          <div id="drop-zone"><p>将图片拖拽到此处以上传</p></div>
+        </div>
+      </div>
+      <div class="bottom-actions">
+        <button id="save-diary-btn">保存日记</button>
+        <button id="share-btn">分享</button>
+        <button id="delete-diary-btn">删除日记</button>
+      </div>
+    </main>
+  </div>
+
+  <input type="file" id="imageInput" class="hidden-input" accept="image/*" />
+  <input type="file" id="audioInput" class="hidden-input" accept="audio/*" />
+  <div id="lightbox"><img src="" alt="Lightbox image"></div>
+  <div id="doodle-modal" class="modal">
+    <div class="modal-content">
+      <h3>自由涂鸦</h3>
+      <canvas id="canvas" width="400" height="300"></canvas>
+      <div class="doodle-tools">
+        <span>颜色:</span>
+        <div class="color-swatch active" style="background-color: black;" data-color="black"></div>
+        <div class="color-swatch" style="background-color: red;" data-color="red"></div>
+        <div class="color-swatch" style="background-color: blue;" data-color="blue"></div>
+        <div class="color-swatch" style="background-color: green;" data-color="green"></div>
+      </div>
+      <div class="modal-actions">
+        <button id="undo-doodle">撤回</button>
+        <button id="cancel-doodle">取消</button>
+        <button id="save-doodle">保存并插入</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const savedTheme = localStorage.getItem('diaryTheme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeSwitcher = document.getElementById('theme-switcher');
+      themeSwitcher.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('diaryTheme', newTheme);
+      });
+
+      const diaryTitle = document.getElementById("diary-title"), diaryContent = document.getElementById("diary-content"), saveDiaryBtn = document.getElementById("save-diary-btn"), newDiaryBtn = document.getElementById("new-diary-btn"), diaryList = document.getElementById("diary-list"), timeInput = document.getElementById("time"), weatherInput = document.getElementById("weather"), moodInput = document.getElementById("mood"), locationInput = document.getElementById("location"), shareBtn = document.getElementById("share-btn"), lightbox = document.getElementById("lightbox"), lightboxImg = lightbox.querySelector('img'), openEmojiBtn = document.getElementById('open-emoji-btn'), emojiPanel = document.getElementById('emoji-panel');
+      // --- 新增元素获取 ---
+      const deleteDiaryBtn = document.getElementById('delete-diary-btn');
+      const searchBox = document.getElementById('search-box');
+      
+      let doodleHistory = [], currentPenColor = 'black';
+      const emojis = ['😊','😂','❤️','👍','😭','🤔','🎉','😍','🙏','🔥','💯','👋','😢','😠','😮','😴','😎','🥳','🤯','💔'];
+
+      emojis.forEach(emoji => {
+          const span = document.createElement('span');
+          span.textContent = emoji;
+          emojiPanel.appendChild(span);
+      });
+
+      const getDiaries = () => JSON.parse(localStorage.getItem('multimediaDiaries') || '[]');
+      const saveDiaries = (diaries) => localStorage.setItem('multimediaDiaries', JSON.stringify(diaries));
+      
+      // --- 功能改造: renderSidebar 函数增加搜索功能 ---
+      function renderSidebar(searchTerm = '') {
+          let diaries = getDiaries();
+          diaryList.innerHTML = '';
+          const currentId = diaryContent.dataset.currentId;
+          
+          if (searchTerm) {
+              const lowerCaseSearchTerm = searchTerm.toLowerCase();
+              diaries = diaries.filter(diary => diary.title.toLowerCase().includes(lowerCaseSearchTerm));
+          }
+
+          diaries.sort((a, b) => b.id - a.id);
+          diaries.forEach(diary => {
+              const item = document.createElement('li');
+              item.className = 'diary-item';
+              if (diary.id == currentId) item.classList.add('active');
+              item.dataset.id = diary.id;
+              const datePart = new Date(diary.id).toLocaleDateString();
+              item.innerHTML = `<span class="diary-item-title" title="${diary.title}">${diary.title}</span><small class="diary-item-date">${datePart}</small>`;
+              item.addEventListener('click', () => loadDiary(diary.id));
+              diaryList.appendChild(item);
+          });
+      }
+      
+      // --- 功能改造: clearEditor 清空搜索框 ---
+      function clearEditor() {
+          diaryTitle.value = '';
+          diaryContent.innerHTML = '';
+          diaryContent.dataset.currentId = '';
+          locationInput.value = '';
+          const now = new Date();
+          now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+          timeInput.value = now.toISOString().slice(0, 16);
+          weatherInput.selectedIndex = 0;
+          moodInput.selectedIndex = 0;
+          searchBox.value = ''; // 清空搜索框
+          renderSidebar();
+      }
+
+      // --- 功能改造: loadDiary 刷新侧边栏时保留搜索状态 ---
+      function loadDiary(id) {
+          const diary = getDiaries().find(d => d.id == id);
+          if (!diary) return;
+          diaryTitle.value = diary.title;
+          diaryContent.innerHTML = diary.content;
+          diaryContent.dataset.currentId = diary.id;
+          timeInput.value = diary.meta.time;
+          weatherInput.value = diary.meta.weather;
+          moodInput.value = diary.meta.mood;
+          locationInput.value = diary.meta.location;
+          renderSidebar(searchBox.value); // 保持搜索过滤
+      }
+
+      saveDiaryBtn.addEventListener('click', () => { const diaries = getDiaries(); const currentId = diaryContent.dataset.currentId; const diaryData = { title: diaryTitle.value || '无标题日记', content: diaryContent.innerHTML, meta: { time: timeInput.value, weather: weatherInput.value, mood: moodInput.value, location: locationInput.value }, savedAt: new Date().toLocaleString('zh-CN', { hour12: false }), }; if (currentId) { const index = diaries.findIndex(d => d.id == currentId); if (index !== -1) diaries[index] = { ...diaries[index], ...diaryData, id: parseInt(currentId) }; } else { const newDiary = { id: Date.now(), ...diaryData }; diaries.push(newDiary); diaryContent.dataset.currentId = newDiary.id; } saveDiaries(diaries); renderSidebar(searchBox.value); alert('日记已保存！'); });
+      newDiaryBtn.addEventListener('click', clearEditor);
+
+      // --- 新增: 删除日记功能 ---
+      deleteDiaryBtn.addEventListener('click', () => {
+          const currentId = diaryContent.dataset.currentId;
+          if (!currentId) {
+              alert('没有打开的日记可以删除！');
+              return;
+          }
+          if (confirm('您确定要永久删除这篇日记吗？此操作无法撤销。')) {
+              let diaries = getDiaries();
+              diaries = diaries.filter(d => d.id != currentId);
+              saveDiaries(diaries);
+              clearEditor(); // 清空编辑器并刷新侧边栏
+              alert('日记已删除。');
+          }
+      });
+
+      // --- 新增: 搜索框事件监听 ---
+      searchBox.addEventListener('input', () => {
+          renderSidebar(searchBox.value);
+      });
+
+      // --- 以下是未做修改的原始功能 ---
+      function insertNodeAtCursor(node) { diaryContent.focus(); const selection = window.getSelection(); if (selection.rangeCount === 0) { diaryContent.appendChild(node); return; } let range = selection.getRangeAt(0); if (!diaryContent.contains(range.startContainer)) { range.selectNodeContents(diaryContent); range.collapse(false); } range.deleteContents(); range.insertNode(node); const newRange = document.createRange(); newRange.setStartAfter(node); newRange.collapse(true); selection.removeAllRanges(); selection.addRange(newRange); }
+      function insertMediaNode(node) { const wrapper = document.createElement('div'); wrapper.className = 'resizable-wrapper'; wrapper.contentEditable = false; wrapper.style.width = (node.tagName === 'IMG') ? '300px' : 'auto'; const container = document.createElement('div'); container.className = 'media-container'; const viewBtn = document.createElement('button'); viewBtn.className = 'view-original-btn'; viewBtn.innerHTML = '&#128269;'; viewBtn.title = '查看原图'; container.appendChild(node); if (node.tagName === 'IMG') { container.appendChild(viewBtn); } wrapper.appendChild(container); const emptyLine = document.createElement('div'); emptyLine.innerHTML = '<br>'; insertNodeAtCursor(wrapper); insertNodeAtCursor(emptyLine); }
+      function handleFile(file, type) { if (!file) return; if (type === 'image' && !file.type.startsWith('image/')) { alert('请上传图片文件！'); return; } const reader = new FileReader(); reader.onload = (e) => { let mediaNode; if (type === 'image') { mediaNode = document.createElement('img'); mediaNode.src = e.target.result; } else { mediaNode = document.createElement('audio'); mediaNode.controls = true; mediaNode.src = e.target.result; } insertMediaNode(mediaNode); }; reader.readAsDataURL(file); }
+      document.getElementById('insert-image-btn').onclick = () => document.getElementById('imageInput').click();
+      document.getElementById('insert-audio-btn').onclick = () => document.getElementById('audioInput').click();
+      document.getElementById('imageInput').onchange = e => handleFile(e.target.files[0], 'image');
+      document.getElementById('audioInput').onchange = e => handleFile(e.target.files[0], 'audio');
+      const dropZone = document.getElementById("drop-zone");
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); }));
+      ['dragenter', 'dragover'].forEach(eName => dropZone.addEventListener(eName, () => dropZone.classList.add('drag-over')));
+      ['dragleave', 'drop'].forEach(eName => dropZone.addEventListener(eName, () => dropZone.classList.remove('drag-over')));
+      dropZone.addEventListener('drop', e => handleFile(e.dataTransfer.files[0], 'image'));
+      openEmojiBtn.addEventListener('click', (e) => { e.stopPropagation(); emojiPanel.classList.toggle('show'); });
+      emojiPanel.addEventListener('click', (e) => { if (e.target.tagName === 'SPAN') { insertNodeAtCursor(document.createTextNode(e.target.textContent)); emojiPanel.classList.remove('show'); } });
+      window.addEventListener('click', () => { if (emojiPanel.classList.contains('show')) emojiPanel.classList.remove('show'); });
+      const canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d"), doodleModal = document.getElementById("doodle-modal"); let drawing = false; const saveDoodleState = () => doodleHistory.push(canvas.toDataURL()); const startDrawing = (e) => { e.stopPropagation(); drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); }; const stopDrawing = (e) => { if (drawing) { e.stopPropagation(); drawing = false; ctx.closePath(); saveDoodleState(); }}; const draw = (e) => { if (!drawing) return; e.stopPropagation(); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = currentPenColor; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); }; canvas.addEventListener("mousedown", startDrawing); canvas.addEventListener("mouseup", stopDrawing); canvas.addEventListener("mouseout", stopDrawing); canvas.addEventListener("mousemove", draw); document.getElementById('open-doodle-modal').onclick = () => { doodleModal.style.display = 'flex'; if(doodleHistory.length === 0) saveDoodleState(); }; document.getElementById('cancel-doodle').onclick = () => { doodleModal.style.display = 'none'; doodleHistory = []; ctx.clearRect(0, 0, canvas.width, canvas.height); }; document.getElementById('undo-doodle').addEventListener('click', () => { if (doodleHistory.length > 1) { doodleHistory.pop(); const lastState = new Image(); lastState.src = doodleHistory[doodleHistory.length - 1]; lastState.onload = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(lastState, 0, 0); }; } }); document.querySelectorAll('.color-swatch').forEach(swatch => { swatch.addEventListener('click', (e) => { document.querySelector('.color-swatch.active').classList.remove('active'); e.target.classList.add('active'); currentPenColor = e.target.dataset.color; }); }); document.getElementById('save-doodle').onclick = () => { const img = document.createElement('img'); img.src = canvas.toDataURL(); insertMediaNode(img); doodleModal.style.display = 'none'; doodleHistory = []; ctx.clearRect(0, 0, canvas.width, canvas.height); };
+      diaryContent.addEventListener('click', e => { if (e.target.classList.contains('view-original-btn')) { const img = e.target.closest('.media-container').querySelector('img'); if (img) { lightboxImg.src = img.src; lightbox.style.display = 'flex'; } } });
+      lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+      shareBtn.addEventListener('click', async () => { const title = diaryTitle.value || '一篇日记'; const text = diaryContent.innerText; const shareData = { title, text }; if (navigator.share) { try { await navigator.share(shareData); } catch (err) { console.error("Share failed:", err); } } else { try { await navigator.clipboard.writeText(`${title}\n\n${text}`); alert('浏览器不支持原生分享，日记内容已复制到剪贴板！'); } catch (err) { alert('复制失败！'); } } });
+
+      clearEditor();
+      renderSidebar();
+    });
+  </script>
+</body>
+</html>

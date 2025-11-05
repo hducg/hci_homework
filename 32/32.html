@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f9fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .outer-container {
+      position: relative;
+      width: 100%; 
+      height: 100%; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      z-index: -1; 
+      border-radius: 30px;
+    }
+
+    .diary-container {
+      width: 50%; 
+      height: 87.5%; 
+      border-radius: 30px; 
+      background-color: rgba(255, 255, 255, 0.8);
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .upload-label {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      background-color: rgba(255, 255, 255, 0.6); 
+      padding: 5px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #backgroundUpload {
+      display: none;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+      padding: 0 5%;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 4px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .input-inline {
+      width: 32%; 
+      display: inline-block;
+      margin-right: 1%;
+    }
+
+    .input-inline:last-child {
+      margin-right: 0;
+    }
+    
+    .fileInput {
+      width: 0%;
+    }
+
+    /* 事件与感想内容 */
+    #diary-content {
+      min-height: 200px;
+      max-height: 250px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+      border-radius: 4px;
+      font-size: 18px;
+      resize: none;
+      overflow-y: auto;
+      opacity: 0.8;
+    }
+
+    /* 涂鸦画布 */
+    #canvas {
+      border: 1px solid #aaa;
+      cursor: crosshair;
+      border-radius: 4px;
+    }
+
+    .toolbar button {
+      background-color: white; 
+      border: 2px solid grey; 
+      padding: 5px 15px;
+      border-radius: 4px; 
+      cursor: pointer;
+      font-size: 14px; 
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    .preview-img, .preview-audio, .preview-video {
+      max-width: 100%;
+      margin-top: 10px;
+    }
+
+    .emoji {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    .scrollable-content {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    input[type="file"]::-webkit-file-upload-button {
+      visibility: hidden;
+    }
+
+    input[type="file"] {
+      opacity: 0;
+      cursor: pointer;
+    }
+
+  </style>
+  <script src="js/emoji-picker-element.js"></script>
+</head>
+<body>
+  <div class="outer-container">
+    <div class="background" id="backgroundImage"></div>
+
+    <div class="diary-container">
+      <label class="upload-label" for="backgroundUpload">上传背景图片</label>
+      <input type="file" id="backgroundUpload" accept="image/*" onchange="changeBackgroundImage()" />
+
+      <h1>我的多媒体日记</h1>
+
+      <div class="scrollable-content">
+        <div class="form-group">
+          <label>时间:</label>
+          <input type="datetime-local" id="time">
+        </div>
+
+        <div class="form-group">
+          <div class="input-inline">
+            <label for="weather">天气:</label>
+            <select id="weather">
+              <option>☀️ 晴</option>
+              <option>⛅ 多云</option>
+              <option>🌧️ 雨</option>
+              <option>🌨️ 雪</option>
+            </select>
+          </div>
+          <div class="input-inline">
+            <label for="mood">心情:</label>
+            <select id="mood">
+              <option>😊 开心</option>
+              <option>😔 难过</option>
+              <option>😠 生气</option>
+              <option>😌 平静</option>
+            </select>
+          </div>
+          <div class="input-inline">
+            <label for="location">地点:</label>
+            <input type="text" id="location" placeholder="请输入地点">
+          </div>
+        </div>
+
+        
+          <div class="form-group">
+            <label>事件与感想:</label>
+            <div id="diary-content" contenteditable="true"></div>
+          </div>
+
+          <div class="form-group toolbar">
+            <label>插入：</label>
+            <button onclick="insertEmoji('😊')">😊</button> 
+            <button onclick="insertEmoji('😢')">😢</button> 
+            <button onclick="insertEmoji('❤️')">❤️</button>
+
+            <div>
+              <button onclick="document.getElementById('imageInput').click()">插入图片</button>
+              <input class="fileInput" type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+              
+              <button onclick="document.getElementById('audioInput').click()">插入音频</button>
+              <input class="fileInput" type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+              
+              <button onclick="document.getElementById('videoInput').click()">插入视频</button>
+              <input class="fileInput" type="file" id="videoInput" accept="video/*" onchange="insertVideo()" />
+            </div>
+
+          </div>
+
+          <div class="form-group toolbar">
+            <label>涂鸦（点击后保存插入）:</label><br>
+            <canvas id="canvas" width="300" height="200"></canvas><br>
+            <button onclick="insertDoodle()">插入涂鸦</button>
+          </div>
+        
+        </div>
+
+    </div>
+  </div>
+  <script>
+
+    function changeBackgroundImage() {
+      const input = document.getElementById("backgroundUpload");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const background = document.getElementById("backgroundImage");
+        background.style.backgroundImage = `url(${e.target.result})`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertEmoji(emoji) { 
+      const content = document.getElementById("diary-content"); 
+      content.innerHTML += emoji; 
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertVideo() {
+      const input = document.getElementById("videoInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><video controls class="preview-video"><source src="${e.target.result}" type="${file.type}"></video><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+    }
+  </script>
+</body>
+</html>

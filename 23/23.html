@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记 - 优化版</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .info-panel {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .content-panel {
+      flex: 3;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4a4a4a;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    #diary-content {
+      min-height: 300px;
+      border: 1px solid #ccc;
+      padding: 15px;
+      background-color: #fafafa;
+      border-radius: 4px;
+      line-height: 1.6;
+    }
+
+    .toolbar {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .toolbar button, .toolbar input[type="file"] {
+      padding: 8px 12px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .toolbar button:hover {
+      background-color: #0056b3;
+    }
+
+    .emoji-set button {
+        background: none;
+        border: none;
+        font-size: 20px;
+        padding: 5px;
+    }
+
+    #canvas {
+      border: 1px solid #ccc;
+      cursor: crosshair;
+      border-radius: 4px;
+    }
+    
+    .doodle-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 5px;
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 90%;
+      margin: 10px 0;
+      display: block;
+    }
+    
+    #save-btn {
+        background-color: #28a745;
+    }
+    #save-btn:hover {
+        background-color: #218838;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>我的多媒体日记</h1>
+
+  <div class="container">
+    <div class="info-panel">
+      <div class="form-group">
+        <label for="time">时间:</label>
+        <input type="datetime-local" id="time">
+      </div>
+
+      <div class="form-group">
+        <label for="weather">天气:</label>
+        <select id="weather">
+          <option>☀️ 晴</option>
+          <option>⛅ 多云</option>
+          <option>🌧️ 雨</option>
+          <option>🌨️ 雪</option>
+          <option>💨 风</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="mood">心情:</label>
+        <select id="mood">
+          <option>😊 开心</option>
+          <option>😔 难过</option>
+          <option>😠 生气</option>
+          <option>😌 平静</option>
+          <option>😍 激动</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="location">地点:</label>
+        <input type="text" id="location" placeholder="请输入地点">
+      </div>
+        
+      <div class="form-group">
+        <label>涂鸦板:</label>
+        <canvas id="canvas" width="280" height="180"></canvas>
+        <div class="doodle-controls">
+            <input type="color" id="pen-color" value="#000000">
+            <input type="range" id="pen-width" min="1" max="10" value="2">
+            <button onclick="insertDoodle()">插入涂鸦</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-panel">
+      <div class="form-group">
+        <label for="diary-content">事件与感想:</label>
+        <div id="diary-content" contenteditable="true"></div>
+      </div>
+
+      <div class="toolbar">
+        <label>插入：</label>
+        <div class="emoji-set">
+            <button onclick="insertEmoji('😊')">😊</button>
+            <button onclick="insertEmoji('😢')">😢</button>
+            <button onclick="insertEmoji('❤️')">❤️</button>
+            <button onclick="insertEmoji('👍')">👍</button>
+            <button onclick="insertEmoji('🎉')">🎉</button>
+        </div>
+        <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" title="插入图片" />
+        <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" title="插入音频" />
+        <button id="save-btn" onclick="saveDiary()">保存日记</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const diaryContent = document.getElementById("diary-content");
+
+    function insertEmoji(emoji) {
+      diaryContent.focus();
+      document.execCommand('insertText', false, emoji);
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      if (!input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = `<br><img src="${e.target.result}" class="preview-img"><br>`;
+        diaryContent.focus();
+        document.execCommand('insertHTML', false, img);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      if (!input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const audio = `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+        diaryContent.focus();
+        document.execCommand('insertHTML', false, audio);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const penColor = document.getElementById("pen-color");
+    const penWidth = document.getElementById("pen-width");
+    let drawing = false;
+
+    canvas.addEventListener("mousedown", (e) => {
+        drawing = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+    });
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.strokeStyle = penColor.value;
+      ctx.lineWidth = penWidth.value;
+      ctx.lineCap = 'round';
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+    }
+
+    function insertDoodle() {
+      const dataURL = canvas.toDataURL();
+      const img = `<br><img src="${dataURL}" class="preview-img"><br>`;
+      diaryContent.focus();
+      document.execCommand('insertHTML', false, img);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    // 保存与加载功能
+    function saveDiary() {
+        const data = {
+            time: document.getElementById('time').value,
+            weather: document.getElementById('weather').value,
+            mood: document.getElementById('mood').value,
+            location: document.getElementById('location').value,
+            content: diaryContent.innerHTML
+        };
+        localStorage.setItem('multimediaDiary', JSON.stringify(data));
+        alert('日记已保存！');
+    }
+
+    function loadDiary() {
+        const savedData = localStorage.getItem('multimediaDiary');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            document.getElementById('time').value = data.time;
+            document.getElementById('weather').value = data.weather;
+            document.getElementById('mood').value = data.mood;
+            document.getElementById('location').value = data.location;
+            diaryContent.innerHTML = data.content;
+        }
+    }
+
+    // 初始化
+    window.onload = () => {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById("time").value = now.toISOString().slice(0,16);
+      
+      loadDiary(); // 页面加载时尝试加载旧日记
+    }
+  </script>
+</body>
+</html>

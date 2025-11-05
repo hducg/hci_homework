@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多媒体日记本</title>
+  <style>
+    :root {
+      --primary-color: #6c63ff;
+      --secondary-color: #ff6584;
+      --accent-color: #4ecdc4;
+      --light-color: #f7f9fc;
+      --dark-color: #333344;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius: 10px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+      color: var(--dark-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 25px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    header {
+      grid-column: 1 / -1;
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      color: var(--primary-color);
+      border-bottom: 1px solid #eee;
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    .card-title i {
+      margin-right: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+      color: var(--dark-color);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+    }
+
+    #diary-content {
+      min-height: 250px;
+      border: 1px solid #ddd;
+      padding: 18px;
+      background-color: white;
+      border-radius: var(--radius);
+      overflow-y: auto;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    #diary-content:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+    }
+
+    #canvas {
+      border: 1px solid #aaa;
+      border-radius: var(--radius);
+      cursor: crosshair;
+      background-color: white;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .toolbar button, .toolbar input[type="file"] {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button i {
+      margin-right: 8px;
+    }
+
+    button:hover {
+      background-color: #5a52e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background-color: var(--secondary-color);
+    }
+
+    button.secondary:hover {
+      background-color: #ff5277;
+    }
+
+    button.accent {
+      background-color: var(--accent-color);
+      color: var(--dark-color);
+    }
+
+    button.accent:hover {
+      background-color: #3dbeb6;
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin-top: 15px;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .emoji-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: var(--radius);
+    }
+
+    .emoji {
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      border-radius: 6px;
+    }
+
+    .emoji:hover {
+      transform: scale(1.2);
+      background: rgba(108, 99, 255, 0.1);
+    }
+
+    .doodle-tools {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .color-option {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+
+    .color-option.active {
+      border-color: var(--dark-color);
+      transform: scale(1.1);
+    }
+
+    .diary-list {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .diary-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: var(--transition);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+
+    .diary-item:hover {
+      background-color: #f8f9ff;
+      transform: translateX(5px);
+    }
+
+    .diary-item.active {
+      background-color: #eef0ff;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .diary-item h3 {
+      margin-bottom: 8px;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .diary-meta {
+      font-size: 0.85rem;
+      color: #777;
+      display: flex;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .diary-preview {
+      font-size: 0.9rem;
+      color: #555;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+
+    .search-box input {
+      padding-left: 45px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .action-buttons button {
+      flex: 1;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #888;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: #ccc;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .stat-item {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #777;
+    }
+
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-book"></i> 我的多媒体日记本</h1>
+      <p class="subtitle">记录生活中的每一刻，用文字、图片、声音和涂鸦</p>
+    </header>
+
+    <!-- 日记列表区域 -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-list"></i> 日记列表</h2>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="search" placeholder="搜索日记...">
+      </div>
+      <div class="diary-list" id="diary-list">
+        <!-- 日记列表将通过JavaScript动态生成 -->
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="total-diaries">0</div>
+          <div class="stat-label">总日记</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="this-month">0</div>
+          <div class="stat-label">本月日记</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 日记编辑区域 -->
+    <div class="card">
+      <h2 class="card-title"><i class="fas fa-edit"></i> 写日记</h2>
+      
+      <div class="form-group">
+        <label><i class="far fa-clock"></i> 时间:</label>
+        <input type="datetime-local" id="time">
+      </div>
+
+      <div class="form-group">
+        <label><i class="fas fa-cloud-sun"></i> 天气:</label>
+        <select id="weather">
+          <option>☀️ 晴</option>
+          <option>⛅ 多云</option>
+          <option>🌧️ 雨</option>
+          <option>🌨️ 雪</option>
+          <option>🌪️ 风</option>
+          <option>🌫️ 雾</option>
+          <option>⛈️ 雷雨</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label><i class="far fa-smile"></i> 心情:</label>
+        <select id="mood">
+          <option>😊 开心</option>
+          <option>😔 难过</option>
+          <option>😠 生气</option>
+          <option>😌 平静</option>
+          <option>😍 兴奋</option>
+          <option>😴 疲惫</option>
+          <option>🤔 思考</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label><i class="fas fa-map-marker-alt"></i> 地点:</label>
+        <input type="text" id="location" placeholder="请输入地点">
+      </div>
+
+      <div class="form-group">
+        <label><i class="far fa-file-alt"></i> 事件与感想:</label>
+        <div id="diary-content" contenteditable="true" placeholder="开始写下你的日记..."></div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="far fa-smile-wink"></i> 插入表情:</label>
+        <div class="emoji-picker">
+          <span class="emoji" onclick="insertEmoji('😊')">😊</span>
+          <span class="emoji" onclick="insertEmoji('😢')">😢</span>
+          <span class="emoji" onclick="insertEmoji('❤️')">❤️</span>
+          <span class="emoji" onclick="insertEmoji('😂')">😂</span>
+          <span class="emoji" onclick="insertEmoji('😍')">😍</span>
+          <span class="emoji" onclick="insertEmoji('😎')">😎</span>
+          <span class="emoji" onclick="insertEmoji('🤔')">🤔</span>
+          <span class="emoji" onclick="insertEmoji('🙏')">🙏</span>
+          <span class="emoji" onclick="insertEmoji('🎉')">🎉</span>
+          <span class="emoji" onclick="insertEmoji('🌟')">🌟</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="fas fa-images"></i> 插入多媒体:</label>
+        <div class="toolbar">
+          <button onclick="document.getElementById('imageInput').click()">
+            <i class="fas fa-image"></i> 添加图片
+          </button>
+          <button class="accent" onclick="document.getElementById('audioInput').click()">
+            <i class="fas fa-music"></i> 添加音频
+          </button>
+          <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="insertImage()" />
+          <input type="file" id="audioInput" accept="audio/*" style="display: none;" onchange="insertAudio()" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="fas fa-paint-brush"></i> 涂鸦:</label>
+        <div class="doodle-tools">
+          <span>颜色:</span>
+          <div class="color-option active" style="background-color: black;" data-color="black"></div>
+          <div class="color-option" style="background-color: red;" data-color="red"></div>
+          <div class="color-option" style="background-color: blue;" data-color="blue"></div>
+          <div class="color-option" style="background-color: green;" data-color="green"></div>
+          <span>粗细:</span>
+          <select id="brush-size">
+            <option value="2">细</option>
+            <option value="5" selected>中</option>
+            <option value="10">粗</option>
+          </select>
+          <button onclick="clearCanvas()"><i class="fas fa-eraser"></i> 清除</button>
+        </div>
+        <canvas id="canvas" width="300" height="200"></canvas><br>
+        <button onclick="insertDoodle()"><i class="fas fa-download"></i> 插入涂鸦</button>
+      </div>
+
+      <div class="action-buttons">
+        <button class="accent" onclick="saveDiary()">
+          <i class="fas fa-save"></i> 保存日记
+        </button>
+        <button class="secondary" onclick="clearAll()">
+          <i class="fas fa-trash-alt"></i> 清空内容
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 表情插入功能
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.focus();
+      document.execCommand('insertText', false, emoji);
+    }
+
+    // 图片插入功能
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.focus();
+        document.execCommand('insertHTML', false, `<img src="${e.target.result}" class="preview-img" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">`);
+      };
+      reader.readAsDataURL(file);
+      input.value = ''; // 重置文件输入
+    }
+
+    // 音频插入功能
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.focus();
+        document.execCommand('insertHTML', false, `<div style="margin: 15px 0;"><audio controls class="preview-audio" style="width: 100%;"><source src="${e.target.result}" type="${file.type}"></audio></div>`);
+      };
+      reader.readAsDataURL(file);
+      input.value = ''; // 重置文件输入
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let currentColor = 'black';
+    let brushSize = 5;
+
+    // 设置初始画笔
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = currentColor;
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    canvas.addEventListener("mousemove", draw);
+
+    function startDrawing(e) {
+      drawing = true;
+      draw(e);
+    }
+
+    function stopDrawing() {
+      drawing = false;
+      ctx.beginPath();
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    // 颜色选择
+    document.querySelectorAll('.color-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.color-option').forEach(opt => {
+          opt.classList.remove('active');
+        });
+        this.classList.add('active');
+        currentColor = this.getAttribute('data-color');
+        ctx.strokeStyle = currentColor;
+      });
+    });
+
+    // 画笔大小选择
+    document.getElementById('brush-size').addEventListener('change', function() {
+      brushSize = parseInt(this.value);
+      ctx.lineWidth = brushSize;
+    });
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.focus();
+      document.execCommand('insertHTML', false, `<div style="margin: 15px 0;"><img src="${dataURL}" class="preview-img" style="max-width: 300px; display: block; margin: 0 auto;"></div>`);
+      clearCanvas();
+    }
+
+    // 日记管理功能
+    let diaries = JSON.parse(localStorage.getItem('multimedia-diaries')) || [];
+    let currentDiaryId = null;
+
+    function saveDiary() {
+      const time = document.getElementById("time").value;
+      const weather = document.getElementById("weather").value;
+      const mood = document.getElementById("mood").value;
+      const location = document.getElementById("location").value;
+      const content = document.getElementById("diary-content").innerHTML;
+
+      if (!content.trim() || content === '<br>') {
+        alert('日记内容不能为空！');
+        return;
+      }
+
+      const diary = {
+        id: currentDiaryId || Date.now().toString(),
+        time: time || new Date().toISOString().slice(0,16),
+        weather,
+        mood,
+        location,
+        content,
+        created: new Date().toISOString()
+      };
+
+      if (currentDiaryId) {
+        // 更新现有日记
+        const index = diaries.findIndex(d => d.id === currentDiaryId);
+        if (index !== -1) {
+          diaries[index] = diary;
+        }
+      } else {
+        // 添加新日记
+        diaries.push(diary);
+      }
+
+      localStorage.setItem('multimedia-diaries', JSON.stringify(diaries));
+      alert('日记保存成功！');
+      loadDiaryList();
+      clearAll();
+    }
+
+    function loadDiaryList() {
+      const diaryList = document.getElementById("diary-list");
+      const searchTerm = document.getElementById("search").value.toLowerCase();
+      
+      const filteredDiaries = diaries.filter(diary => 
+        diary.content.toLowerCase().includes(searchTerm) || 
+        (diary.location && diary.location.toLowerCase().includes(searchTerm)) ||
+        diary.weather.toLowerCase().includes(searchTerm) ||
+        diary.mood.toLowerCase().includes(searchTerm)
+      );
+
+      diaryList.innerHTML = '';
+      
+      if (filteredDiaries.length === 0) {
+        diaryList.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <p>${searchTerm ? '没有找到相关日记' : '还没有日记，开始记录吧！'}</p>
+          </div>
+        `;
+        updateStats();
+        return;
+      }
+
+      filteredDiaries.forEach(diary => {
+        const diaryItem = document.createElement('div');
+        diaryItem.className = 'diary-item';
+        if (diary.id === currentDiaryId) {
+          diaryItem.classList.add('active');
+        }
+        
+        // 提取纯文本预览
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = diary.content;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        diaryItem.innerHTML = `
+          <h3>${diary.mood.split(' ')[0]} ${new Date(diary.created).toLocaleDateString()}</h3>
+          <div class="diary-meta">
+            <span><i class="fas fa-cloud-sun"></i> ${diary.weather}</span>
+            ${diary.location ? `<span><i class="fas fa-map-marker-alt"></i> ${diary.location}</span>` : ''}
+          </div>
+          <div class="diary-preview">${textContent.substring(0, 100)}${textContent.length > 100 ? '...' : ''}</div>
+        `;
+        diaryItem.addEventListener('click', () => loadDiary(diary.id));
+        diaryList.appendChild(diaryItem);
+      });
+      
+      updateStats();
+    }
+
+    function loadDiary(id) {
+      const diary = diaries.find(d => d.id === id);
+      if (!diary) return;
+
+      document.getElementById("time").value = diary.time;
+      document.getElementById("weather").value = diary.weather;
+      document.getElementById("mood").value = diary.mood;
+      document.getElementById("location").value = diary.location || '';
+      document.getElementById("diary-content").innerHTML = diary.content;
+      
+      currentDiaryId = diary.id;
+      loadDiaryList(); // 刷新列表以显示活动状态
+    }
+
+    function clearAll() {
+      document.getElementById("time").value = '';
+      document.getElementById("weather").selectedIndex = 0;
+      document.getElementById("mood").selectedIndex = 0;
+      document.getElementById("location").value = '';
+      document.getElementById("diary-content").innerHTML = '';
+      clearCanvas();
+      currentDiaryId = null;
+      
+      // 重置时间为当前
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+      
+      loadDiaryList(); // 刷新列表
+    }
+
+    function updateStats() {
+      document.getElementById("total-diaries").textContent = diaries.length;
+      
+      const thisMonth = new Date().getMonth();
+      const thisYear = new Date().getFullYear();
+      const thisMonthDiaries = diaries.filter(diary => {
+        const diaryDate = new Date(diary.created);
+        return diaryDate.getMonth() === thisMonth && diaryDate.getFullYear() === thisYear;
+      });
+      
+      document.getElementById("this-month").textContent = thisMonthDiaries.length;
+    }
+
+    // 搜索功能
+    document.getElementById("search").addEventListener('input', loadDiaryList);
+
+    // 初始化
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+      loadDiaryList();
+      
+      // 设置内容区域placeholder
+      const contentEditable = document.getElementById('diary-content');
+      contentEditable.addEventListener('focus', function() {
+        if (this.innerHTML === '') {
+          this.innerHTML = '';
+        }
+      });
+      contentEditable.addEventListener('blur', function() {
+        if (this.innerHTML === '' || this.innerHTML === '<br>') {
+          this.innerHTML = '';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

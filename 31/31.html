@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      background-color: #f7f9fc;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+
+    #diary-content {
+      min-height: 200px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+    }
+
+    #canvas {
+      border: 1px solid #aaa;
+      cursor: crosshair;
+    }
+
+    .toolbar button {
+      margin-right: 10px;
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin-top: 10px;
+    }
+
+    .emoji {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>我的多媒体日记</h1>
+
+  <div class="form-group">
+    <label>时间:</label>
+    <input type="datetime-local" id="time">
+  </div>
+
+  <div class="form-group">
+    <label>天气:</label>
+    <select id="weather">
+      <option>☀️ 晴</option>
+      <option>⛅ 多云</option>
+      <option>🌧️ 雨</option>
+      <option>🌨️ 雪</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>心情:</label>
+    <select id="mood">
+      <option>😊 开心</option>
+      <option>😔 难过</option>
+      <option>😠 生气</option>
+      <option>😌 平静</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>地点:</label>
+    <input type="text" id="location" placeholder="请输入地点">
+  </div>
+
+  <div class="form-group">
+    <label>事件与感想:</label>
+    <div id="diary-content" contenteditable="true"></div>
+  </div>
+
+  <div class="form-group toolbar">
+    <label>插入：</label>
+    <button onclick="insertEmoji('😊')">😊</button>
+    <button onclick="insertEmoji('😢')">😢</button>
+    <button onclick="insertEmoji('❤️')">❤️</button>
+
+    <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+    <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+  </div>
+
+  <div class="form-group">
+    <label>涂鸦（点击后保存插入）:</label><br>
+    <canvas id="canvas" width="300" height="200"></canvas><br>
+    <button onclick="insertDoodle()">插入涂鸦</button>
+  </div>
+
+  <script>
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 初始化时间为当前
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+    }
+  </script>
+</body>
+</html>

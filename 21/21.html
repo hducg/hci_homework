@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      background-color: #f7f9fc;
+      transition: background-color 0.5s ease;
+      background-image: linear-gradient(135deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                        linear-gradient(225deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                        linear-gradient(315deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                        linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%);
+      background-position: 10px 0, 10px 0, 0 0, 0 0;
+      background-size: 20px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #5a5a5a;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      font-weight: 300;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .form-group:hover {
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+      color: #444;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #93B5C6;
+      box-shadow: 0 0 0 3px rgba(147, 181, 198, 0.2);
+    }
+
+    #diary-content {
+      min-height: 200px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    #diary-content:focus {
+      border-color: #93B5C6;
+      box-shadow: 0 0 0 3px rgba(147, 181, 198, 0.2);
+    }
+
+    #canvas {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: crosshair;
+      background-color: white;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .toolbar label {
+      margin: 0;
+      margin-right: 10px;
+    }
+
+    .toolbar button {
+      padding: 8px 15px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .toolbar button:hover {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      margin: 0 5px;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-button {
+      display: inline-block;
+      padding: 8px 15px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .file-input-wrapper:hover .file-input-button {
+      background: #e0e0e0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .emoji {
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      margin: 0 5px;
+      transition: transform 0.2s ease;
+    }
+
+    .emoji:hover {
+      transform: scale(1.2);
+    }
+
+    /* 心情分布样式 */
+    #mood-calendar {
+      margin-top: 30px;
+      padding: 25px;
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      transition: background-color 0.5s ease;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    #mood-calendar h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #5a5a5a;
+      font-weight: 300;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .calendar-day {
+      text-align: center;
+      padding: 12px 5px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      min-height: 70px;
+      background-color: rgba(250, 250, 250, 0.8);
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .calendar-day:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .calendar-day-header {
+      font-weight: bold;
+      background-color: rgba(147, 181, 198, 0.3);
+      color: #444;
+    }
+
+    .day-number {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    .day-mood {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .other-month {
+      background-color: rgba(240, 240, 240, 0.5);
+      color: #aaa;
+    }
+
+    /* 保存按钮样式 */
+    #save-btn {
+      display: block;
+      margin: 30px auto;
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #93B5C6 0%, #76A5AF 100%);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 500;
+      box-shadow: 0 6px 20px rgba(118, 165, 175, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    #save-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(118, 165, 175, 0.6);
+    }
+
+    #save-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* 背景颜色选择器样式 */
+    #bg-color-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 25px 0;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.85);
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      transition: background-color 0.5s ease;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    #bg-color-selector-label {
+      width: 100%;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #444;
+    }
+
+    .color-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    .color-option:hover {
+      transform: scale(1.15);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .color-option.selected {
+      border-color: #fff;
+      box-shadow: 0 0 0 3px #333, 0 5px 15px rgba(0,0,0,0.2);
+      transform: scale(1.15);
+    }
+
+    /* 涂鸦工具栏样式 */
+    .drawing-tools {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 15px;
+      background: rgba(245, 245, 245, 0.7);
+      border-radius: 10px;
+    }
+
+    .drawing-tools button {
+      padding: 8px 16px;
+      background-color: #e0e0e0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .drawing-tools button:hover {
+      background-color: #d0d0d0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .drawing-tools button.active {
+      background: linear-gradient(135deg, #93B5C6 0%, #76A5AF 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(118, 165, 175, 0.3);
+    }
+
+    .brush-size-container, .color-picker-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 8px 15px;
+      border-radius: 6px;
+    }
+
+    .brush-size-container label, .color-picker-container label {
+      margin: 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .brush-size-container input {
+      width: 100px;
+      margin: 0;
+    }
+
+    .color-picker-container input {
+      width: 50px;
+      height: 35px;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    #brush-size-value {
+      min-width: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: #555;
+    }
+
+    .section-title {
+      font-size: 20px;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(147, 181, 198, 0.3);
+      color: #5a5a5a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📘 我的多媒体日记</h1>
+
+    <!-- 背景颜色选择器 -->
+    <div id="bg-color-selector">
+      <div id="bg-color-selector-label">🎨 选择背景颜色：</div>
+      <!-- 颜色选项将通过JavaScript动态生成 -->
+    </div>
+
+    <div class="form-group">
+      <label for="time">⏰ 时间:</label>
+      <input type="datetime-local" id="time">
+    </div>
+
+    <div class="form-group">
+      <label for="weather">🌤️ 天气:</label>
+      <select id="weather">
+        <option value="☀️ 晴">☀️ 晴</option>
+        <option value="⛅ 多云">⛅ 多云</option>
+        <option value="🌧️ 雨">🌧️ 雨</option>
+        <option value="🌨️ 雪">🌨️ 雪</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="mood">😊 心情:</label>
+      <select id="mood">
+        <option value="😊 开心">😊 开心</option>
+        <option value="😔 难过">😔 难过</option>
+        <option value="😠 生气">😠 生气</option>
+        <option value="😌 平静">😌 平静</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="location">📍 地点:</label>
+      <input type="text" id="location" placeholder="请输入地点">
+    </div>
+
+    <div class="form-group">
+      <label for="diary-content">📝 事件与感想:</label>
+      <div id="diary-content" contenteditable="true"></div>
+    </div>
+
+    <div class="form-group toolbar">
+      <label>📎 插入：</label>
+      <button onclick="insertEmoji('😊')" title="开心"><span class="emoji">😊</span></button>
+      <button onclick="insertEmoji('😢')" title="难过"><span class="emoji">😢</span></button>
+      <button onclick="insertEmoji('❤️')" title="爱心"><span class="emoji">❤️</span></button>
+      
+      <div class="file-input-wrapper">
+        <div class="file-input-button">🖼️ 图片</div>
+        <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+      </div>
+      
+      <div class="file-input-wrapper">
+        <div class="file-input-button">🎵 音频</div>
+        <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+      </div>
+    </div>
+
+    <h3 class="section-title">🎨 涂鸦创作</h3>
+    <div class="form-group">
+      <label>🖌️ 涂鸦（点击后保存插入）:</label><br>
+      <canvas id="canvas" width="100%" height="250"></canvas><br>
+      <div class="drawing-tools">
+        <button id="pen-tool" class="active">✏️ 画笔</button>
+        <button id="eraser-tool">🧹 橡皮擦</button>
+        
+        <div class="brush-size-container">
+          <label>📏 大小:</label>
+          <input type="range" id="brush-size" min="1" max="30" value="3">
+          <span id="brush-size-value">3</span>
+        </div>
+        
+        <div class="color-picker-container">
+          <label>🎨 颜色:</label>
+          <input type="color" id="brush-color" value="#000000">
+        </div>
+        
+        <button id="clear-canvas">🗑️ 清空</button>
+      </div>
+      <button onclick="insertDoodle()" style="margin-top: 15px; padding: 10px 20px;">💾 插入涂鸦</button>
+    </div>
+
+    <button id="save-btn">💾 保存日记</button>
+  </div>
+
+  <!-- 心情分布区域 -->
+  <div id="mood-calendar">
+    <h2>📅 心情日历</h2>
+    <div class="calendar-grid" id="calendar-container">
+      <!-- 日历将通过JavaScript动态生成 -->
+    </div>
+  </div>
+
+  <script>
+    // 莫兰迪色系调色板
+    const morandiColors = [
+      '#FFB6B9', // 亮粉色
+      '#FAE3D9', // 肤色
+      '#BBDED6', // 薄荷绿
+      '#93B5C6', // 蓝色
+      '#FFD1DC', // 淡粉色
+      '#F5E6CA', // 米黄色
+      '#E8F1F2', // 淡灰蓝
+      '#F4F1E6'  // 米白色
+    ];
+
+    // 初始化背景颜色选择器
+    function initBgColorSelector() {
+      const selector = document.getElementById('bg-color-selector');
+      const label = document.getElementById('bg-color-selector-label');
+      
+      // 为每个颜色创建选项
+      morandiColors.forEach((color, index) => {
+        const colorOption = document.createElement('div');
+        colorOption.className = 'color-option';
+        colorOption.style.backgroundColor = color;
+        colorOption.dataset.color = color;
+        
+        // 设置第一个颜色为默认选中
+        if (index === 0) {
+          colorOption.classList.add('selected');
+          changeBackgroundColor(color);
+        }
+        
+        // 添加点击事件
+        colorOption.addEventListener('click', function() {
+          // 移除其他选项的选中状态
+          document.querySelectorAll('.color-option').forEach(option => {
+            option.classList.remove('selected');
+          });
+          
+          // 设置当前选项为选中状态
+          this.classList.add('selected');
+          
+          // 更改背景颜色
+          changeBackgroundColor(color);
+        });
+        
+        selector.appendChild(colorOption);
+      });
+      
+      // 从localStorage恢复之前选择的颜色
+      const savedColor = localStorage.getItem('diaryBgColor');
+      if (savedColor) {
+        changeBackgroundColor(savedColor);
+        document.querySelectorAll('.color-option').forEach(option => {
+          option.classList.remove('selected');
+          if (option.dataset.color === savedColor) {
+            option.classList.add('selected');
+          }
+        });
+      }
+    }
+
+    // 更改背景颜色并相应调整输入框透明度
+    function changeBackgroundColor(color) {
+      // 设置页面背景色
+      document.body.style.backgroundColor = color;
+      
+      // 保存选择到localStorage
+      localStorage.setItem('diaryBgColor', color);
+    }
+
+    // 原有函数保持不变
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 完善的涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let currentTool = 'pen'; // 'pen' or 'eraser'
+    let brushSize = 3;
+    let brushColor = '#000000';
+    let canvasBgColor = 'white';
+
+    // 设置canvas初始状态
+    function initCanvas() {
+      ctx.fillStyle = canvasBgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = brushColor;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+    }
+
+    // 绘制函数
+    function draw(e) {
+      if (!isDrawing) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      if (currentTool === 'pen') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = brushColor;
+      } else if (currentTool === 'eraser') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = canvasBgColor;
+      }
+      
+      ctx.lineWidth = brushSize;
+      
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      
+      lastX = x;
+      lastY = y;
+    }
+
+    // 鼠标事件
+    canvas.addEventListener("mousedown", function(e) {
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = e.clientX - rect.left;
+      lastY = e.clientY - rect.top;
+    });
+    
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", () => isDrawing = false);
+    canvas.addEventListener("mouseout", () => isDrawing = false);
+
+    // 触摸事件支持移动设备
+    canvas.addEventListener("touchstart", function(e) {
+      e.preventDefault();
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = e.touches[0].clientX - rect.left;
+      lastY = e.touches[0].clientY - rect.top;
+    });
+    
+    canvas.addEventListener("touchmove", function(e) {
+      e.preventDefault();
+      if (!isDrawing) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      
+      if (currentTool === 'pen') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = brushColor;
+      } else if (currentTool === 'eraser') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = canvasBgColor;
+      }
+      
+      ctx.lineWidth = brushSize;
+      
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      
+      lastX = x;
+      lastY = y;
+    });
+    
+    canvas.addEventListener("touchend", () => isDrawing = false);
+
+    // 工具选择
+    document.getElementById("pen-tool").addEventListener("click", function() {
+      currentTool = 'pen';
+      this.classList.add('active');
+      document.getElementById("eraser-tool").classList.remove('active');
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = brushColor;
+    });
+    
+    document.getElementById("eraser-tool").addEventListener("click", function() {
+      currentTool = 'eraser';
+      this.classList.add('active');
+      document.getElementById("pen-tool").classList.remove('active');
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = canvasBgColor;
+    });
+
+    // 笔刷大小控制
+    const brushSizeSlider = document.getElementById("brush-size");
+    const brushSizeValue = document.getElementById("brush-size-value");
+    
+    brushSizeSlider.addEventListener("input", function() {
+      brushSize = parseInt(this.value);
+      brushSizeValue.textContent = brushSize;
+      ctx.lineWidth = brushSize;
+    });
+
+    // 笔刷颜色控制
+    const brushColorPicker = document.getElementById("brush-color");
+    
+    brushColorPicker.addEventListener("input", function() {
+      brushColor = this.value;
+      if (currentTool === 'pen') {
+        ctx.strokeStyle = brushColor;
+      }
+    });
+
+    // 清空画布
+    document.getElementById("clear-canvas").addEventListener("click", function() {
+      if (confirm("确定要清空画布吗？")) {
+        initCanvas();
+      }
+    });
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+    }
+
+    // 初始化时间为当前
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+      
+      // 初始化背景颜色选择器
+      initBgColorSelector();
+      
+      // 初始化画布
+      initCanvas();
+      
+      // 初始化心情日历
+      generateMoodCalendar();
+    };
+
+    // 保存日记条目
+    function saveDiaryEntry() {
+      const time = document.getElementById("time").value;
+      const weather = document.getElementById("weather").value;
+      const mood = document.getElementById("mood").value;
+      const location = document.getElementById("location").value;
+      const content = document.getElementById("diary-content").innerHTML;
+      
+      if (!time) {
+        alert("请选择时间");
+        return;
+      }
+      
+      // 创建日记条目对象
+      const diaryEntry = {
+        time,
+        weather,
+        mood,
+        location,
+        content
+      };
+      
+      // 从localStorage获取现有日记数据
+      let diaryData = JSON.parse(localStorage.getItem("diaryEntries") || "{}");
+      
+      // 使用日期作为键保存日记
+      const dateKey = time.split("T")[0]; // 获取 YYYY-MM-DD 格式的日期
+      diaryData[dateKey] = diaryEntry;
+      
+      // 保存到localStorage
+      localStorage.setItem("diaryEntries", JSON.stringify(diaryData));
+      
+      // 重新生成心情日历
+      generateMoodCalendar();
+      
+      alert("日记保存成功！");
+    }
+
+    // 生成心情日历
+    function generateMoodCalendar() {
+      const calendarContainer = document.getElementById("calendar-container");
+      calendarContainer.innerHTML = ""; // 清空容器
+      
+      // 创建星期标题
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+      weekdays.forEach(day => {
+        const dayHeader = document.createElement("div");
+        dayHeader.className = "calendar-day calendar-day-header";
+        dayHeader.textContent = day;
+        calendarContainer.appendChild(dayHeader);
+      });
+      
+      // 获取当前月份信息
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      
+      // 获取本月第一天和最后一天
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      
+      // 获取本月总天数
+      const daysInMonth = lastDay.getDate();
+      
+      // 计算第一天是星期几（0=星期日, 6=星期六）
+      const firstDayOfWeek = firstDay.getDay();
+      
+      // 添加空白格子以对齐星期
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        const emptyDay = document.createElement("div");
+        emptyDay.className = "calendar-day";
+        calendarContainer.appendChild(emptyDay);
+      }
+      
+      // 从localStorage获取日记数据
+      const diaryData = JSON.parse(localStorage.getItem("diaryEntries") || "{}");
+      
+      // 为本月每一天创建格子
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement("div");
+        dayElement.className = "calendar-day";
+        
+        // 添加日期数字
+        const dayNumber = document.createElement("div");
+        dayNumber.className = "day-number";
+        dayNumber.textContent = day;
+        dayElement.appendChild(dayNumber);
+        
+        // 添加心情符号
+        const dayMood = document.createElement("div");
+        dayMood.className = "day-mood";
+        
+        // 构造日期键 (YYYY-MM-DD)
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        
+        // 如果有对应的日记条目，显示心情
+        if (diaryData[dateKey]) {
+          // 提取心情符号（从选项文本中获取第一个表情符号）
+          const moodText = diaryData[dateKey].mood;
+          const moodEmoji = moodText.substring(0, 2); // 获取表情符号部分
+          dayMood.textContent = moodEmoji;
+        }
+        
+        dayElement.appendChild(dayMood);
+        calendarContainer.appendChild(dayElement);
+      }
+    }
+    
+    // 响应式画布
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      canvas.width = container.clientWidth;
+      initCanvas();
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  </script>
+</body>
+</html>

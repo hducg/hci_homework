@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多媒体日记应用</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- 首页 -->
+<div id="home" class="page active">
+        <h1>我的日记本</h1>
+        <div id="大盒子">
+            <div id="写日记" class="small-box">
+                <div class="date" id="home-date">
+                  <div id="daytime">27日</div> <div id="othertime">2025年10月</div>
+                </div>
+                <p id="home-content">晚饭吃完遛个弯运动运动，今天天气不错，散步时看到了美丽的夕阳。</p>
+                <div class="image-placeholder1">
+                    <img src="./资源/20190805160051_xhwog.jpg">
+                     <div id="button-div"><button  id="record-today">记录今天</button></div>
+                </div>
+            </div>
+            
+            <div id="感谢陪伴" class="small-box">
+                <h2>感谢陪伴</h2>
+                <p>感谢您一直以来的陪伴与支持，这段时光因为有您而更加美好。</p>
+                <p>生活中的点滴温暖都值得被记录和珍藏。</p>
+                <div class="image-placeholder2">
+                    <img src="./资源/OIP-C (4).webp" alt="感谢陪伴图片">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 日记记录流程 - 改为悬浮框形式 -->
+    <div class="diary-overlay" id="diary-overlay">
+      <div class="diary-container" id="diary-flow">
+        <div class="progress-bar">
+          <div class="progress" id="progress"></div>
+        </div>
+        
+        <!-- 步骤1：选择天气 -->
+        <div class="step active" id="step1">
+          <h2>今天天气如何？</h2>
+          <div class="options-container">
+            <div class="option" data-value="sunny">
+              <i class="fas fa-sun weather-icon" style="color: #f39c12;"></i>
+              <span>晴朗</span>
+            </div>
+            <div class="option" data-value="cloudy">
+              <i class="fas fa-cloud weather-icon" style="color: #95a5a6;"></i>
+              <span>多云</span>
+            </div>
+            <div class="option" data-value="rainy">
+              <i class="fas fa-cloud-rain weather-icon" style="color: #3498db;"></i>
+              <span>雨天</span>
+            </div>
+            <div class="option" data-value="snowy">
+              <i class="fas fa-snowflake weather-icon" style="color: #1abc9c;"></i>
+              <span>雪天</span>
+            </div>
+            <div class="option" data-value="windy">
+              <i class="fas fa-wind weather-icon" style="color: #9b59b6;"></i>
+              <span>大风</span>
+            </div>
+          </div>
+          <div class="button-group">
+            <button class="btn-prev" disabled>上一步</button>
+            <button class="btn-next" id="next1">下一步</button>
+          </div>
+        </div>
+        
+        <!-- 步骤2：选择心情 -->
+        <div class="step" id="step2">
+          <h2>你今天感觉如何？</h2>
+          <div class="options-container">
+            <div class="option" data-value="happy">
+              <i class="fas fa-laugh mood-icon" style="color: #f1c40f;"></i>
+              <span>开心</span>
+            </div>
+            <div class="option" data-value="sad">
+              <i class="fas fa-sad-tear mood-icon" style="color: #3498db;"></i>
+              <span>难过</span>
+            </div>
+            <div class="option" data-value="angry">
+              <i class="fas fa-angry mood-icon" style="color: #e74c3c;"></i>
+              <span>生气</span>
+            </div>
+            <div class="option" data-value="tired">
+              <i class="fas fa-tired mood-icon" style="color: #7f8c8d;"></i>
+              <span>疲惫</span>
+            </div>
+            <div class="option" data-value="excited">
+              <i class="fas fa-grin-stars mood-icon" style="color: #e67e22;"></i>
+              <span>兴奋</span>
+            </div>
+          </div>
+          <div class="button-group">
+            <button class="btn-prev" id="prev2">上一步</button>
+            <button class="btn-next" id="next2">下一步</button>
+          </div>
+        </div>
+        
+        <!-- 步骤3：记录日记内容 -->
+<div class="step" id="step3">
+  <h2>写下今天的经历</h2>
+  <div 
+    class="text-input" 
+    id="diary-content" 
+    contenteditable="true" 
+    placeholder="今天发生了什么呢？"
+    style="min-height: 150px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 20px 0;"
+  ></div>
+  
+  <!-- 修改后的工具栏 -->
+<div class="toolbar" style="margin: 15px 0;">
+  <label>插入：</label>
+  <button onclick="insertEmoji('😊')">😊</button>
+  <button onclick="insertEmoji('😢')">😢</button>
+  <button onclick="insertEmoji('❤️')">❤️</button>
+  
+  <div class="file-input-wrapper">
+    <button style="background: #2ecc71;">
+      <i class="fas fa-image"></i> 插入图片
+    </button>
+    <input 
+      type="file" 
+      id="imageInput" 
+      accept="image/*" 
+      onchange="handleImageUpload(event)"
+    />
+  </div>
+  
+  <button onclick="toggleDoodle()">
+    <i class="fas fa-paint-brush"></i> 涂鸦
+  </button>
+  
+  <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">
+    提示：Ctrl+点击图片可删除
+  </span>
+</div>
+  
+  <!-- 涂鸦区域 -->
+  <div id="doodle-container" style="display: none; margin-top: 15px; border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+    <canvas id="diary-canvas" width="300" height="200" style="border: 1px solid #aaa; display: block; margin: 0 auto;"></canvas>
+    <div style="text-align: center; margin-top: 10px;">
+
+      <button onclick="clearDoodle()">清除</button>
+      <button onclick="insertDoodle()">插入涂鸦</button>
+      <button onclick="toggleDoodle()">关闭</button>
+    </div>
+  </div>
+  
+  <div class="button-group">
+    <button class="btn-prev" id="prev3">上一步</button>
+    <button class="btn-next" id="next3">下一步</button>
+  </div>
+</div>
+        
+        <!-- 步骤4：预览和提交 -->
+        <div class="step" id="step4">
+          <h2>预览你的日记</h2>
+          <div class="preview-item">
+            <div class="preview-label">日期：</div>
+            <div id="preview-date">2025年10月27日</div>
+          </div>
+          <div class="preview-item">
+            <div class="preview-label">天气：</div>
+            <div id="preview-weather"></div>
+          </div>
+          <div class="preview-item">
+            <div class="preview-label">心情：</div>
+            <div id="preview-mood"></div>
+          </div>
+          <div class="preview-item">
+            <div class="preview-label">日记内容：</div>
+            <div id="preview-content"></div>
+          </div>
+          <button class="btn-submit" id="submit-diary">提交日记</button>
+        </div>
+      </div>
+    </div>
+  
+  <!-- 时间记录页面 -->
+  <div id="time" class="page">
+    <h1>时间记录</h1>
+    <p>这里按时间顺序显示您之前写过的日记</p>
+    
+    <div class="timeline" id="timeline">
+      <!-- 时间轴内容将通过JavaScript动态生成 -->
+    </div>
+  </div>
+  
+  <!-- 个人中心页面 -->
+  <div id="my" class="page">
+    <h1>我的</h1>
+    <p>这是个人中心页内容...</p>
+  </div>
+
+  <!-- 日记详情模态框 -->
+  <div id="diary-detail-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn">&times;</span>
+      <h2>日记详情</h2>
+      
+      <div class="diary-detail">
+        <div class="diary-detail-item">
+          <span class="diary-detail-label">日期：</span>
+          <span id="detail-date" class="diary-detail-content">2025年10月27日</span>
+        </div>
+        
+        <div class="diary-detail-item">
+          <span class="diary-detail-label">天气：</span>
+          <span id="detail-weather" class="diary-detail-content">晴朗</span>
+          <select id="edit-weather" class="diary-edit-content">
+            <option value="sunny">晴朗</option>
+            <option value="cloudy">多云</option>
+            <option value="rainy">雨天</option>
+            <option value="snowy">雪天</option>
+            <option value="windy">大风</option>
+          </select>
+        </div>
+        
+        <div class="diary-detail-item">
+          <span class="diary-detail-label">心情：</span>
+          <span id="detail-mood" class="diary-detail-content">开心</span>
+          <select id="edit-mood" class="diary-edit-content">
+            <option value="happy">开心</option>
+            <option value="sad">难过</option>
+            <option value="angry">生气</option>
+            <option value="tired">疲惫</option>
+            <option value="excited">兴奋</option>
+          </select>
+        </div>
+        
+        <div class="diary-detail-item">
+          <span class="diary-detail-label">内容：</span>
+          <div id="detail-content" class="diary-detail-content">这里是日记内容...</div>
+          <textarea id="edit-content" class="diary-edit-content">这里是日记内容...</textarea>
+        </div>
+      </div>
+      
+      <div class="diary-actions">
+        <button class="edit-btn" id="edit-diary">编辑</button>
+        <button class="delete-btn" id="delete-diary">删除</button>
+        <button class="save-btn" id="save-diary" style="display:none">保存</button>
+        <button class="cancel-btn" id="cancel-edit" style="display:none">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <nav>
+    <a href="#" class="nav-link active" data-page="home">
+      <i class="fas fa-home"></i>
+      <span>首页</span>
+    </a>
+    <a href="#" class="nav-link" data-page="time">
+      <i class="fas fa-clock"></i>
+      <span>时间记录</span>
+    </a>
+    <a href="#" class="nav-link" data-page="my">
+      <i class="fas fa-user"></i>
+      <span>我的</span>
+    </a>
+  </nav>
+
+  <script>
+// 页面导航功能
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const pageId = this.getAttribute('data-page');
+    
+    // 更新导航激活状态
+    document.querySelectorAll('.nav-link').forEach(nav => {
+      nav.classList.remove('active');
+    });
+    this.classList.add('active');
+    
+    // 隐藏所有页面
+    document.querySelectorAll('.page').forEach(page => {
+      page.classList.remove('active');
+    });
+    
+    // 显示选中的页面
+    document.getElementById(pageId).classList.add('active');
+    
+    // 如果是时间记录页面，更新时间轴
+    if (pageId === 'time') {
+      updateTimeline();
+    }
+    
+    // 更新URL
+    window.history.pushState({}, '', `#${pageId}`);
+  });
+});
+
+// 根据hash初始化页面
+window.addEventListener('load', function() {
+  const hash = window.location.hash.substring(1);
+  if (hash) {
+    const targetPage = document.getElementById(hash);
+    if (targetPage) {
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      targetPage.classList.add('active');
+      
+      // 更新导航激活状态
+      document.querySelectorAll('.nav-link').forEach(nav => {
+        nav.classList.remove('active');
+        if (nav.getAttribute('data-page') === hash) {
+          nav.classList.add('active');
+        }
+      });
+    }
+  }
+  
+  // 初始化日期
+  updateCurrentDate();
+  
+  // 初始化时间轴
+  updateTimeline();
+});
+
+// 日记记录流程功能
+let currentStep = 1;
+const totalSteps = 4;
+
+// 日记数据
+const diaryData = {
+  date: new Date().toLocaleDateString('zh-CN'),
+  weather: '',
+  mood: '',
+  content: ''
+};
+
+// 初始化进度条
+updateProgress();
+
+// 天气选择
+document.querySelectorAll('#step1 .option').forEach(option => {
+  option.addEventListener('click', function() {
+    document.querySelectorAll('#step1 .option').forEach(opt => {
+      opt.classList.remove('selected');
+    });
+    this.classList.add('selected');
+    diaryData.weather = this.getAttribute('data-value');
+  });
+});
+
+// 心情选择
+document.querySelectorAll('#step2 .option').forEach(option => {
+  option.addEventListener('click', function() {
+    document.querySelectorAll('#step2 .option').forEach(opt => {
+      opt.classList.remove('selected');
+    });
+    this.classList.add('selected');
+    diaryData.mood = this.getAttribute('data-value');
+  });
+});
+
+// 下一步按钮事件
+document.getElementById('next1').addEventListener('click', function() {
+  if (diaryData.weather) {
+    goToStep(2);
+  } else {
+    alert('请选择天气');
+  }
+});
+
+document.getElementById('next2').addEventListener('click', function() {
+  if (diaryData.mood) {
+    goToStep(3);
+  } else {
+    alert('请选择心情');
+  }
+});
+
+// 简化图片插入功能 - 插入时控制大小，确认后只保留图片
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (!file.type.startsWith('image/')) {
+    alert('请选择图片文件！');
+    return;
+  }
+  
+  if (file.size > 3 * 1024 * 1024) {
+    alert('图片大小不能超过3MB！');
+    return;
+  }
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    const content = document.getElementById('diary-content');
+    content.focus();
+    
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    
+    // 创建临时图片容器（只在编辑时显示控制按钮）
+    const tempContainer = document.createElement('div');
+    tempContainer.className = 'temp-image-container';
+    tempContainer.style.margin = '10px 0';
+    tempContainer.style.padding = '8px';
+    tempContainer.style.background = '#f5f7fa';
+    tempContainer.style.borderRadius = '6px';
+    tempContainer.style.border = '1px dashed #cbd5e0';
+    
+    // 创建图片元素
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    img.className = 'editable-image';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
+    img.style.borderRadius = '4px';
+    img.style.cursor = 'pointer';
+    
+    // 图片加载完成后设置默认大小
+    img.onload = function() {
+      setImageSize(img, 'medium');
+    };
+    
+    // 创建简单的大小控制按钮
+    const sizeControls = document.createElement('div');
+    sizeControls.className = 'simple-size-controls';
+    sizeControls.style.marginTop = '8px';
+    sizeControls.style.textAlign = 'center';
+    sizeControls.style.display = 'flex';
+    sizeControls.style.justifyContent = 'center';
+    sizeControls.style.gap = '5px';
+    sizeControls.style.flexWrap = 'wrap';
+    
+    // 大小选项
+    const sizes = [
+      { label: '小', value: 'small' },
+      { label: '中', value: 'medium' },
+      { label: '大', value: 'large' }
+    ];
+    
+    sizes.forEach(size => {
+      const btn = document.createElement('button');
+      btn.textContent = size.label;
+      btn.className = 'simple-size-btn';
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        setImageSize(img, size.value);
+        
+        // 更新按钮状态
+        sizeControls.querySelectorAll('.simple-size-btn').forEach(b => {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+      };
+      if (size.value === 'medium') btn.classList.add('active');
+      sizeControls.appendChild(btn);
+    });
+    
+    // 确认插入按钮
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = '确认插入';
+    confirmBtn.className = 'confirm-insert-btn';
+    confirmBtn.onclick = (e) => {
+      e.stopPropagation();
+      confirmImageInsertion(img, tempContainer);
+    };
+    sizeControls.appendChild(confirmBtn);
+    
+    // 取消按钮
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '取消';
+    cancelBtn.className = 'cancel-insert-btn';
+    cancelBtn.onclick = (e) => {
+      e.stopPropagation();
+      tempContainer.remove();
+    };
+    sizeControls.appendChild(cancelBtn);
+    
+    // 组装临时容器
+    tempContainer.appendChild(img);
+    tempContainer.appendChild(sizeControls);
+    
+    // 插入到光标位置
+    range.insertNode(tempContainer);
+    
+    // 移动光标到容器后面
+    range.setStartAfter(tempContainer);
+    range.setEndAfter(tempContainer);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    event.target.value = '';
+  };
+  
+  reader.onerror = function() {
+    alert('图片读取失败，请重试！');
+  };
+  
+  reader.readAsDataURL(file);
+}
+
+// 设置图片大小
+function setImageSize(img, size) {
+  const sizes = {
+    small: { width: '200px', height: 'auto' },
+    medium: { width: '350px', height: 'auto' },
+    large: { width: '500px', height: 'auto' }
+  };
+  
+  const config = sizes[size] || sizes.medium;
+  img.style.width = config.width;
+  img.style.height = config.height;
+  img.dataset.currentSize = size;
+}
+
+// 确认插入图片（移除控制按钮，只保留图片）
+function confirmImageInsertion(img, container) {
+  // 创建最终的图片元素（不带容器）
+  const finalImg = document.createElement('img');
+  finalImg.src = img.src;
+  finalImg.style.width = img.style.width;
+  finalImg.style.height = img.style.height;
+  finalImg.style.margin = '10px 0';
+  finalImg.style.borderRadius = '6px';
+  finalImg.style.maxWidth = '100%';
+  finalImg.style.cursor = 'pointer';
+  
+  // 添加点击删除功能
+  finalImg.addEventListener('click', function(e) {
+    if (e.ctrlKey) { // 按住Ctrl键点击删除
+      if (confirm('确定删除这张图片吗？')) {
+        this.remove();
+      }
+    }
+  });
+  
+  // 用最终图片替换临时容器
+  container.parentNode.replaceChild(finalImg, container);
+  
+  // 在图片后添加换行，方便继续输入
+  const br = document.createElement('br');
+  finalImg.parentNode.insertBefore(br, finalImg.nextSibling);
+  
+  // 聚焦到内容区域
+  const content = document.getElementById('diary-content');
+  content.focus();
+  
+  // 移动光标到图片后面
+  const selection = window.getSelection();
+  const range = document.createRange();
+  range.setStartAfter(br);
+  range.setEndAfter(br);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+// 点击图片预览大图
+function initImagePreview() {
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG' && 
+        !e.target.classList.contains('editable-image') && 
+        !e.ctrlKey) {
+      
+      const img = e.target;
+      
+      // 创建预览模态框
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.9)';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+      modal.style.zIndex = '10000';
+      modal.style.cursor = 'zoom-out';
+      
+      const previewImg = document.createElement('img');
+      previewImg.src = img.src;
+      previewImg.style.maxWidth = '90%';
+      previewImg.style.maxHeight = '90%';
+      previewImg.style.objectFit = 'contain';
+      previewImg.style.borderRadius = '8px';
+      
+      modal.appendChild(previewImg);
+      document.body.appendChild(modal);
+      
+      // 点击关闭
+      modal.addEventListener('click', function() {
+        document.body.removeChild(modal);
+      });
+      
+      // ESC键关闭
+      const closeModal = function(e) {
+        if (e.key === 'Escape') {
+          document.body.removeChild(modal);
+          document.removeEventListener('keydown', closeModal);
+        }
+      };
+      document.addEventListener('keydown', closeModal);
+    }
+  });
+}
+
+// 初始化图片预览功能
+document.addEventListener('DOMContentLoaded', function() {
+  setupImagePreview();
+});
+
+document.getElementById('next3').addEventListener('click', function() {
+  const content = document.getElementById('diary-content');
+  const hasText = content.textContent.trim().length > 0;
+  const hasImages = content.querySelectorAll('img').length > 0;
+  
+  if (hasText || hasImages) {
+    diaryData.content = content.innerHTML;
+    updatePreview();
+    goToStep(4);
+  } else {
+    alert('请填写日记内容或插入图片/涂鸦');
+  }
+});
+
+// 上一步按钮事件
+document.getElementById('prev2').addEventListener('click', function() {
+  goToStep(1);
+});
+
+document.getElementById('prev3').addEventListener('click', function() {
+  goToStep(2);
+});
+
+// 提交日记
+document.getElementById('submit-diary').addEventListener('click', function() {
+  // 保存日记到本地存储
+  let diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+  diaries.push({
+    ...diaryData,
+    id: Date.now() // 添加唯一ID
+  });
+  localStorage.setItem('diaries', JSON.stringify(diaries));
+
+  
+  // 重置表单
+  resetDiaryForm();
+  
+  // 隐藏日记记录流程悬浮框
+  document.getElementById('diary-overlay').classList.remove('active');
+  
+  alert('日记提交成功！');
+});
+
+// 跳转到指定步骤
+function goToStep(step) {
+  document.querySelector(`.step.active`).classList.remove('active');
+  document.querySelector(`#step${step}`).classList.add('active');
+  currentStep = step;
+  updateProgress();
+}
+
+// 更新进度条
+function updateProgress() {
+  const progress = (currentStep / totalSteps) * 100;
+  document.getElementById('progress').style.width = `${progress}%`;
+}
+
+// 更新当前日期显示
+function updateCurrentDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  const daydata = `${day}日`;
+  const otherdata = `${year}年${month}月`;
+  const formattedDate = `${year}年${month}月${day}日`;
+
+  document.getElementById('daytime').textContent = daydata;
+  document.getElementById('othertime').textContent = otherdata;
+  diaryData.date = formattedDate;
+}
+
+// 更新预览内容
+function updatePreview() {
+  document.getElementById('preview-date').textContent = diaryData.date;
+  
+  // 天气预览
+  const weatherOptions = {
+    sunny: '晴朗 ☀️',
+    cloudy: '多云 ☁️',
+    rainy: '雨天 🌧️',
+    snowy: '雪天 ❄️',
+    windy: '大风 💨'
+  };
+  document.getElementById('preview-weather').textContent = weatherOptions[diaryData.weather];
+  
+  // 心情预览
+  const moodOptions = {
+    happy: '开心 😊',
+    sad: '难过 😢',
+    angry: '生气 😠',
+    tired: '疲惫 😪',
+    excited: '兴奋 🤩'
+  };
+  document.getElementById('preview-mood').textContent = moodOptions[diaryData.mood];
+  
+  // 日记内容预览
+  document.getElementById('preview-content').innerHTML = diaryData.content;
+}
+
+// 重置日记表单
+function resetDiaryForm() {
+  // 重置数据
+  diaryData.weather = '';
+  diaryData.mood = '';
+  diaryData.content = '';
+  
+  // 重置UI
+  document.querySelectorAll('.option').forEach(opt => {
+    opt.classList.remove('selected');
+  });
+  document.getElementById('diary-content').innerHTML = '';
+  
+  // 回到第一步
+  goToStep(1);
+}
+
+// 更新首页显示
+
+// 插入图片功能
+
+
+// 表情插入功能
+function insertEmoji(emoji) {
+  const content = document.getElementById('diary-content');
+  const selection = window.getSelection();
+  
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    const node = document.createTextNode(emoji);
+    range.insertNode(node);
+    range.setStartAfter(node);
+    range.setEndAfter(node);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  } else {
+    // 如果没有选择，则在末尾插入
+    content.innerHTML += emoji;
+  }
+  
+  content.focus();
+}
+
+// 涂鸦功能
+let drawing = false;
+let currentColor = 'black';
+let brushSize = 5;
+const canvas = document.getElementById('diary-canvas');
+const ctx = canvas.getContext('2d');
+
+// 初始化涂鸦功能
+function initDoodle() {
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
+  canvas.addEventListener('mousemove', draw);
+  
+  // 触摸事件支持
+  canvas.addEventListener('touchstart', handleTouchStart);
+  canvas.addEventListener('touchend', stopDrawing);
+  canvas.addEventListener('touchmove', handleTouchMove);
+}
+
+// 初始化涂鸦
+initDoodle();
+
+function startDrawing(e) {
+  drawing = true;
+  draw(e);
+}
+
+function stopDrawing() {
+  drawing = false;
+  ctx.beginPath();
+}
+
+function draw(e) {
+  if (!drawing) return;
+  
+  const rect = canvas.getBoundingClientRect();
+  
+  let x, y;
+  if (e.type.includes('touch')) {
+    x = e.touches[0].clientX - rect.left;
+    y = e.touches[0].clientY - rect.top;
+  } else {
+    x = e.offsetX;
+    y = e.offsetY;
+  }
+  
+  ctx.lineWidth = brushSize;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = currentColor;
+  
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+}
+
+function handleTouchStart(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent("mousedown", {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+}
+
+function handleTouchMove(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const mouseEvent = new MouseEvent("mousemove", {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+}
+
+// 显示/隐藏涂鸦区域
+function toggleDoodle() {
+  const container = document.getElementById('doodle-container');
+  container.style.display = container.style.display === 'none' ? 'block' : 'none';
+}
+
+// 改变涂鸦颜色
+function changeDoodleColor(color) {
+  currentColor = color;
+}
+
+// 改变笔刷大小
+function changeBrushSize(size) {
+  brushSize = size;
+}
+
+// 清除涂鸦
+function clearDoodle() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// 插入涂鸦到日记
+function insertDoodle() {
+  const content = document.getElementById('diary-content');
+  const dataURL = canvas.toDataURL();
+  
+  // 创建图片元素
+  const img = document.createElement('img');
+  img.src = dataURL;
+  img.style.maxWidth = '100%';
+  img.style.margin = '10px 0';
+  img.style.borderRadius = '5px';
+  
+  // 插入到内容区域
+  content.appendChild(img);
+  content.appendChild(document.createElement('br'));
+  
+  // 清除画布并隐藏涂鸦区域
+  clearDoodle();
+  toggleDoodle();
+  
+  // 聚焦到内容区域
+  content.focus();
+}
+
+// 开始记录日记 - 显示悬浮框
+document.getElementById('record-today').addEventListener('click', function() {
+  // 显示日记记录流程悬浮框
+  document.getElementById('diary-overlay').classList.add('active');
+  
+  // 重置表单
+  resetDiaryForm();
+  
+  // 更新日期
+  diaryData.date = new Date().toLocaleDateString('zh-CN');
+});
+
+// 点击悬浮框外部关闭
+document.getElementById('diary-overlay').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.classList.remove('active');
+  }
+});
+
+// 更新时间轴
+function updateTimeline() {
+  const timeline = document.getElementById('timeline');
+  const diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+  
+  // 清空时间轴
+  timeline.innerHTML = '';
+  
+  if (diaries.length === 0) {
+    timeline.innerHTML = '<p style="text-align:center; color:#666; margin:40px 0;">还没有日记记录，快去写一篇吧！</p>';
+    return;
+  }
+  
+  // 按日期排序（最新的在前面）
+  diaries.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  // 生成时间轴项目
+  diaries.forEach((diary, index) => {
+    const timelineItem = document.createElement('div');
+    timelineItem.className = `timeline-item ${index % 2 === 0 ? 'left' : 'right'}`;
+    
+    // 天气和心情的显示文本
+    const weatherOptions = {
+      sunny: '晴朗 ☀️',
+      cloudy: '多云 ☁️',
+      rainy: '雨天 🌧️',
+      snowy: '雪天 ❄️',
+      windy: '大风 💨'
+    };
+    
+    const moodOptions = {
+      happy: '开心 😊',
+      sad: '难过 😢',
+      angry: '生气 😠',
+      tired: '疲惫 😪',
+      excited: '兴奋 🤩'
+    };
+    
+    // 创建预览文本（去除HTML标签）
+    let previewText = diary.content.replace(/<[^>]*>/g, '');
+    previewText = previewText.substring(0, 80) + (previewText.length > 80 ? '...' : '');
+    
+    timelineItem.innerHTML = `
+      <div class="timeline-content" data-id="${diary.id}">
+        <div class="timeline-date">${diary.date}</div>
+        <div class="timeline-weather">${weatherOptions[diary.weather] || diary.weather}</div>
+        <div class="timeline-mood">${moodOptions[diary.mood] || diary.mood}</div>
+        <div class="timeline-preview">${previewText}</div>
+      </div>
+    `;
+    
+    timeline.appendChild(timelineItem);
+  });
+  
+  // 添加点击事件
+  document.querySelectorAll('.timeline-content').forEach(item => {
+    item.addEventListener('click', function() {
+      const diaryId = parseInt(this.getAttribute('data-id'));
+      showDiaryDetail(diaryId);
+    });
+  });
+}
+
+// 显示日记详情
+function showDiaryDetail(diaryId) {
+  const diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+  const diary = diaries.find(d => d.id === diaryId);
+  
+  if (!diary) {
+    alert('日记不存在！');
+    return;
+  }
+  
+  // 天气和心情的显示文本
+  const weatherOptions = {
+    sunny: '晴朗 ☀️',
+    cloudy: '多云 ☁️',
+    rainy: '雨天 🌧️',
+    snowy: '雪天 ❄️',
+    windy: '大风 💨'
+  };
+  
+  const moodOptions = {
+    happy: '开心 😊',
+    sad: '难过 😢',
+    angry: '生气 😠',
+    tired: '疲惫 😪',
+    excited: '兴奋 🤩'
+  };
+  
+  // 填充详情
+  document.getElementById('detail-date').textContent = diary.date;
+  document.getElementById('detail-weather').textContent = weatherOptions[diary.weather] || diary.weather;
+  document.getElementById('detail-mood').textContent = moodOptions[diary.mood] || diary.mood;
+  document.getElementById('detail-content').innerHTML = diary.content;
+  
+  // 设置编辑表单的值
+  document.getElementById('edit-weather').value = diary.weather;
+  document.getElementById('edit-mood').value = diary.mood;
+  document.getElementById('edit-content').value = diary.content.replace(/<[^>]*>/g, '');
+  
+  // 存储当前编辑的日记ID
+  document.getElementById('diary-detail-modal').setAttribute('data-current-id', diaryId);
+  
+  // 退出编辑模式
+  exitEditMode();
+  
+  // 显示模态框
+  document.getElementById('diary-detail-modal').style.display = 'block';
+}
+
+// 进入编辑模式
+function enterEditMode() {
+  const modal = document.getElementById('diary-detail-modal');
+  modal.classList.add('edit-mode');
+  
+  document.getElementById('edit-diary').style.display = 'none';
+  document.getElementById('delete-diary').style.display = 'none';
+  document.getElementById('save-diary').style.display = 'inline-block';
+  document.getElementById('cancel-edit').style.display = 'inline-block';
+}
+
+// 退出编辑模式
+function exitEditMode() {
+  const modal = document.getElementById('diary-detail-modal');
+  modal.classList.remove('edit-mode');
+  
+  document.getElementById('edit-diary').style.display = 'inline-block';
+  document.getElementById('delete-diary').style.display = 'inline-block';
+  document.getElementById('save-diary').style.display = 'none';
+  document.getElementById('cancel-edit').style.display = 'none';
+}
+
+// 保存日记修改
+function saveDiaryEdit() {
+  const diaryId = parseInt(document.getElementById('diary-detail-modal').getAttribute('data-current-id'));
+  const diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+  const diaryIndex = diaries.findIndex(d => d.id === diaryId);
+  
+  if (diaryIndex === -1) {
+    alert('日记不存在！');
+    return;
+  }
+  
+  // 更新日记内容
+  diaries[diaryIndex].weather = document.getElementById('edit-weather').value;
+  diaries[diaryIndex].mood = document.getElementById('edit-mood').value;
+  diaries[diaryIndex].content = document.getElementById('edit-content').value;
+  
+  // 保存到本地存储
+  localStorage.setItem('diaries', JSON.stringify(diaries));
+  
+  // 更新时间轴
+  updateTimeline();
+  
+  // 退出编辑模式
+  exitEditMode();
+  
+  // 刷新详情显示
+  showDiaryDetail(diaryId);
+  
+  alert('日记修改成功！');
+}
+
+// 删除日记
+function deleteDiary() {
+  if (!confirm('确定要删除这篇日记吗？此操作不可恢复！')) {
+    return;
+  }
+  
+  const diaryId = parseInt(document.getElementById('diary-detail-modal').getAttribute('data-current-id'));
+  let diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+  
+  // 过滤掉要删除的日记
+  diaries = diaries.filter(d => d.id !== diaryId);
+  
+  // 保存到本地存储
+  localStorage.setItem('diaries', JSON.stringify(diaries));
+  
+  // 更新时间轴
+  updateTimeline();
+  
+  // 关闭模态框
+  document.getElementById('diary-detail-modal').style.display = 'none';
+  
+  alert('日记删除成功！');
+}
+
+// 模态框事件绑定
+document.querySelector('.close-btn').addEventListener('click', function() {
+  document.getElementById('diary-detail-modal').style.display = 'none';
+});
+
+document.getElementById('edit-diary').addEventListener('click', enterEditMode);
+document.getElementById('save-diary').addEventListener('click', saveDiaryEdit);
+document.getElementById('cancel-edit').addEventListener('click', exitEditMode);
+document.getElementById('delete-diary').addEventListener('click', deleteDiary);
+
+// 点击模态框外部关闭
+window.addEventListener('click', function(event) {
+  const modal = document.getElementById('diary-detail-modal');
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// 页面加载时检查是否有保存的日记
+window.addEventListener('load', function() {
+  updateCurrentDate();
+  const diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+  if (diaries.length > 0) {
+  }
+  // 初始化时间轴
+  updateTimeline();
+});
+  </script>
+</body>
+</html>

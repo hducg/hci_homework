@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多媒体日记 - 记录生活的每一刻</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #6d5dfc;
+      --primary-light: #8a7dfc;
+      --secondary-color: #43cea2;
+      --accent-color: #ff7e5f;
+      --light-color: #f8f9fa;
+      --dark-color: #2d3748;
+      --gray-light: #e2e8f0;
+      --success-color: #48bb78;
+      --border-radius: 16px;
+      --border-radius-sm: 8px;
+      --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      --box-shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      line-height: 1.6;
+      color: var(--dark-color);
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow-lg);
+      overflow: hidden;
+      transform: translateY(0);
+      transition: var(--transition);
+    }
+
+    .container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+      position: relative;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      position: relative;
+      font-weight: 300;
+    }
+
+    .main-content {
+      display: flex;
+      min-height: 600px;
+    }
+
+    .diary-form {
+      flex: 1;
+      padding: 30px;
+      border-right: 1px solid var(--gray-light);
+    }
+
+    .history-section {
+      width: 350px;
+      padding: 20px;
+      background: #f8fafc;
+      overflow-y: auto;
+      max-height: 800px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--gray-light);
+    }
+
+    .history-header h2 {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+    }
+
+    .history-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .history-controls button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: var(--border-radius-sm);
+      background: white;
+      color: var(--dark-color);
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .history-controls button:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .history-controls button.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .history-item {
+      background: white;
+      border-radius: var(--border-radius-sm);
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: var(--transition);
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .history-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-item.selected {
+      border-left: 4px solid var(--accent-color);
+      background: #f0f7ff;
+    }
+
+    .history-item-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .history-item-date {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .history-item-mood {
+      font-size: 1.2rem;
+    }
+
+    .history-item-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--dark-color);
+    }
+
+    .history-item-preview {
+      font-size: 0.9rem;
+      color: #718096;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      margin-bottom: 10px;
+    }
+
+    .history-item-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #a0aec0;
+    }
+
+    .empty-history {
+      text-align: center;
+      padding: 40px 20px;
+      color: #a0aec0;
+    }
+
+    .empty-history i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--dark-color);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .form-group:focus-within label {
+      color: var(--primary-color);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      font-size: 1rem;
+      transition: var(--transition);
+      background-color: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.2);
+      transform: translateY(-2px);
+    }
+
+    #diary-content {
+      min-height: 200px;
+      border: 2px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      padding: 20px;
+      background-color: white;
+      line-height: 1.8;
+      overflow-y: auto;
+      transition: var(--transition);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    #diary-content:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.2);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0;
+      padding: 20px;
+      background: linear-gradient(to right, #f8f9fa, #f1f3f5);
+      border-radius: var(--border-radius-sm);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .toolbar button {
+      background-color: white;
+      border: 2px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .toolbar button:hover {
+      background-color: var(--primary-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(109, 93, 252, 0.3);
+      border-color: var(--primary-color);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-button {
+      background-color: white;
+      border: 2px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .file-input-button:hover {
+      background-color: var(--success-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+      border-color: var(--success-color);
+    }
+
+    .doodle-section {
+      margin-top: 25px;
+      padding: 20px;
+      background: linear-gradient(to right, #f8f9fa, #f1f3f5);
+      border-radius: var(--border-radius-sm);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .doodle-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .doodle-controls button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .doodle-controls button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .color-picker {
+      width: 45px;
+      height: 35px;
+      border: 2px solid var(--gray-light);
+      cursor: pointer;
+      border-radius: var(--border-radius-sm);
+      transition: var(--transition);
+    }
+
+    .color-picker:hover {
+      transform: scale(1.1);
+    }
+
+    #canvas {
+      border: 2px solid var(--gray-light);
+      border-radius: var(--border-radius-sm);
+      cursor: crosshair;
+      background-color: white;
+      display: block;
+      margin: 0 auto;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      transition: var(--transition);
+    }
+
+    #canvas:hover {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin: 15px 0;
+      border-radius: var(--border-radius-sm);
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+    }
+
+    .preview-img:hover {
+      transform: scale(1.02);
+    }
+
+    .preview-audio {
+      width: 100%;
+    }
+
+    .emoji-picker {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      padding: 10px;
+      background: white;
+      border-radius: var(--border-radius-sm);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .emoji {
+      font-size: 1.6rem;
+      cursor: pointer;
+      transition: var(--transition);
+      padding: 8px;
+      border-radius: 8px;
+    }
+
+    .emoji:hover {
+      background-color: rgba(109, 93, 252, 0.1);
+      transform: scale(1.3) rotate(5deg);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 2px solid var(--gray-light);
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: var(--border-radius-sm);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+      box-shadow: 0 7px 14px rgba(109, 93, 252, 0.3);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #a0aec0, #718096);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #718096, #4a5568);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success-color), #68d391);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #38a169, var(--success-color));
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #f56565, #e53e3e);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #e53e3e, #c53030);
+    }
+
+    @media (max-width: 900px) {
+      .main-content {
+        flex-direction: column;
+      }
+      
+      .history-section {
+        width: 100%;
+        max-height: 400px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .actions {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .diary-form {
+        padding: 20px;
+      }
+    }
+
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, var(--primary-light), var(--primary-color));
+    }
+
+    /* 动画效果 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group, .toolbar, .doodle-section {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .toolbar { animation-delay: 0.4s; }
+    .doodle-section { animation-delay: 0.5s; }
+
+    /* 占位符样式 */
+    [contenteditable=true]:empty:before {
+      content: attr(placeholder);
+      color: #a0aec0;
+      pointer-events: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-book-open"></i> 我的多媒体日记</h1>
+      <p>记录生活的每一刻，珍藏美好回忆</p>
+    </header>
+
+    <div class="main-content">
+      <div class="diary-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="time"><i class="far fa-clock"></i> 时间:</label>
+            <input type="datetime-local" id="time">
+          </div>
+
+          <div class="form-group">
+            <label for="weather"><i class="fas fa-cloud-sun"></i> 天气:</label>
+            <select id="weather">
+              <option>☀️ 晴</option>
+              <option>⛅ 多云</option>
+              <option>🌧️ 雨</option>
+              <option>🌨️ 雪</option>
+              <option>🌪️ 风</option>
+              <option>🌫️ 雾</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="mood"><i class="far fa-smile"></i> 心情:</label>
+            <select id="mood">
+              <option>😊 开心</option>
+              <option>😔 难过</option>
+              <option>😠 生气</option>
+              <option>😌 平静</option>
+              <option>😍 兴奋</option>
+              <option>😴 疲惫</option>
+              <option>😰 焦虑</option>
+              <option>🤔 思考</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="title"><i class="fas fa-heading"></i> 标题:</label>
+          <input type="text" id="title" placeholder="给日记起个标题">
+        </div>
+
+        <div class="form-group">
+          <label for="location"><i class="fas fa-map-marker-alt"></i> 地点:</label>
+          <input type="text" id="location" placeholder="请输入地点">
+        </div>
+
+        <div class="form-group">
+          <label for="diary-content"><i class="fas fa-pen-alt"></i> 事件与感想:</label>
+          <div id="diary-content" contenteditable="true" placeholder="开始记录今天的故事..."></div>
+        </div>
+
+        <div class="toolbar">
+          <div class="emoji-picker">
+            <span class="emoji" onclick="insertEmoji('😊')">😊</span>
+            <span class="emoji" onclick="insertEmoji('😢')">😢</span>
+            <span class="emoji" onclick="insertEmoji('❤️')">❤️</span>
+            <span class="emoji" onclick="insertEmoji('😂')">😂</span>
+            <span class="emoji" onclick="insertEmoji('👍')">👍</span>
+            <span class="emoji" onclick="insertEmoji('🎉')">🎉</span>
+            <span class="emoji" onclick="insertEmoji('⭐')">⭐</span>
+            <span class="emoji" onclick="insertEmoji('🌈')">🌈</span>
+          </div>
+
+          <button onclick="formatText('bold')"><i class="fas fa-bold"></i> 粗体</button>
+          <button onclick="formatText('italic')"><i class="fas fa-italic"></i> 斜体</button>
+          <button onclick="formatText('underline')"><i class="fas fa-underline"></i> 下划线</button>
+
+          <div class="file-input-wrapper">
+            <div class="file-input-button">
+              <i class="fas fa-image"></i> 插入图片
+            </div>
+            <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+          </div>
+
+          <div class="file-input-wrapper">
+            <div class="file-input-button">
+              <i class="fas fa-music"></i> 插入音频
+            </div>
+            <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+          </div>
+        </div>
+
+        <div class="doodle-section">
+          <label><i class="fas fa-paint-brush"></i> 涂鸦板:</label>
+          <div class="doodle-controls">
+            <button onclick="changeColor('#000000')" style="background-color: #000000; color: white;">黑色</button>
+            <button onclick="changeColor('#ff0000')" style="background-color: #ff0000; color: white;">红色</button>
+            <button onclick="changeColor('#0000ff')" style="background-color: #0000ff; color: white;">蓝色</button>
+            <button onclick="changeColor('#008000')" style="background-color: #008000; color: white;">绿色</button>
+            <input type="color" id="colorPicker" class="color-picker" value="#000000" onchange="changeColor(this.value)">
+            <button onclick="changeBrushSize(2)">细笔</button>
+            <button onclick="changeBrushSize(5)">中笔</button>
+            <button onclick="changeBrushSize(10)">粗笔</button>
+            <button onclick="clearCanvas()"><i class="fas fa-trash-alt"></i> 清除</button>
+          </div>
+          <canvas id="canvas" width="300" height="200"></canvas>
+          <div style="text-align: center; margin-top: 15px;">
+            <button class="btn btn-success" onclick="insertDoodle()"><i class="fas fa-plus-circle"></i> 插入涂鸦到日记</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-secondary" onclick="clearAll()"><i class="fas fa-eraser"></i> 清空内容</button>
+          <button class="btn btn-danger" onclick="deleteCurrentDiary()"><i class="fas fa-trash"></i> 删除日记</button>
+          <button class="btn btn-primary" onclick="saveDiary()"><i class="fas fa-save"></i> 保存日记</button>
+        </div>
+      </div>
+
+      <div class="history-section">
+        <div class="history-header">
+          <h2><i class="fas fa-history"></i> 历史记录</h2>
+          <span id="diary-count">0 篇日记</span>
+        </div>
+        
+        <div class="history-controls">
+          <button id="filter-all" class="active" onclick="filterDiaries('all')">全部</button>
+          <button id="filter-week" onclick="filterDiaries('week')">本周</button>
+          <button id="filter-month" onclick="filterDiaries('month')">本月</button>
+          <button onclick="exportDiaries()"><i class="fas fa-download"></i> 导出</button>
+        </div>
+        
+        <div class="history-list" id="history-list">
+          <!-- 历史记录将通过JavaScript动态生成 -->
+          <div class="empty-history">
+            <i class="fas fa-book"></i>
+            <p>还没有日记记录</p>
+            <p>开始记录你的第一份日记吧！</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 初始化时间为当前
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+      
+      // 设置日记内容区域的占位符
+      const content = document.getElementById("diary-content");
+      content.addEventListener('focus', function() {
+        if (this.textContent === '开始记录今天的故事...') {
+          this.innerHTML = '';
+        }
+      });
+      
+      content.addEventListener('blur', function() {
+        if (this.innerHTML === '' || this.textContent === '') {
+          this.innerHTML = '开始记录今天的故事...';
+        }
+      });
+      
+      // 初始化涂鸦功能
+      initDoodle();
+      
+      // 加载历史记录
+      loadDiaries();
+    }
+
+    // 插入表情符号
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      if (content.innerHTML === '开始记录今天的故事...' || content.textContent === '开始记录今天的故事...') {
+        content.innerHTML = '';
+      }
+      content.focus();
+      document.execCommand('insertText', false, emoji);
+    }
+
+    // 格式化文本
+    function formatText(command) {
+      document.execCommand(command, false, null);
+      document.getElementById("diary-content").focus();
+    }
+
+    // 插入图片
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        if (content.innerHTML === '开始记录今天的故事...' || content.textContent === '开始记录今天的故事...') {
+          content.innerHTML = '';
+        }
+        content.focus();
+        document.execCommand('insertHTML', false, `<img src="${e.target.result}" class="preview-img" style="max-width: 100%;">`);
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    // 插入音频
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        if (content.innerHTML === '开始记录今天的故事...' || content.textContent === '开始记录今天的故事...') {
+          content.innerHTML = '';
+        }
+        content.focus();
+        document.execCommand('insertHTML', false, `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`);
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let currentColor = '#000000';
+    let brushSize = 2;
+
+    function initDoodle() {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = currentColor;
+    }
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    canvas.addEventListener("mousemove", draw);
+
+    function startDrawing(e) {
+      drawing = true;
+      draw(e);
+    }
+
+    function stopDrawing() {
+      drawing = false;
+      ctx.beginPath();
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = currentColor;
+      
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    function changeColor(color) {
+      currentColor = color;
+      document.getElementById('colorPicker').value = color;
+    }
+
+    function changeBrushSize(size) {
+      brushSize = size;
+    }
+
+    function clearCanvas() {
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = currentColor;
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      if (content.innerHTML === '开始记录今天的故事...' || content.textContent === '开始记录今天的故事...') {
+        content.innerHTML = '';
+      }
+      content.focus();
+      const dataURL = canvas.toDataURL();
+      document.execCommand('insertHTML', false, `<br><img src="${dataURL}" class="preview-img" style="max-width: 100%;"><br>`);
+      clearCanvas();
+    }
+
+    // 日记存储功能
+    let diaries = JSON.parse(localStorage.getItem('diaries')) || [];
+    let currentDiaryId = null;
+
+    // 保存日记
+    function saveDiary() {
+      const time = document.getElementById("time").value;
+      const weather = document.getElementById("weather").value;
+      const mood = document.getElementById("mood").value;
+      const location = document.getElementById("location").value;
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("diary-content").innerHTML;
+      
+      if ((content === '' || content === '开始记录今天的故事...') && !title) {
+        alert('请填写日记内容或标题！');
+        return;
+      }
+      
+      const diaryEntry = {
+        id: currentDiaryId || Date.now().toString(),
+        time,
+        weather,
+        mood,
+        location,
+        title: title || '无标题日记',
+        content,
+        timestamp: new Date().toISOString()
+      };
+      
+      // 更新或添加日记
+      if (currentDiaryId) {
+        const index = diaries.findIndex(d => d.id === currentDiaryId);
+        if (index !== -1) {
+          diaries[index] = diaryEntry;
+        }
+      } else {
+        diaries.push(diaryEntry);
+      }
+      
+      // 保存到本地存储
+      localStorage.setItem('diaries', JSON.stringify(diaries));
+      
+      // 显示成功消息
+      alert('日记已保存！');
+      
+      // 重新加载历史记录
+      loadDiaries();
+      
+      // 重置表单
+      resetForm();
+    }
+
+    // 加载历史记录
+    function loadDiaries(filter = 'all') {
+      const historyList = document.getElementById('history-list');
+      const diaryCount = document.getElementById('diary-count');
+      
+      // 过滤日记
+      let filteredDiaries = [...diaries];
+      const now = new Date();
+      
+      if (filter === 'week') {
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filteredDiaries = diaries.filter(d => new Date(d.timestamp) > oneWeekAgo);
+      } else if (filter === 'month') {
+        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        filteredDiaries = diaries.filter(d => new Date(d.timestamp) > oneMonthAgo);
+      }
+      
+      // 按时间倒序排列
+      filteredDiaries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      // 更新日记计数
+      diaryCount.textContent = `${filteredDiaries.length} 篇日记`;
+      
+      // 清空历史列表
+      historyList.innerHTML = '';
+      
+      if (filteredDiaries.length === 0) {
+        historyList.innerHTML = `
+          <div class="empty-history">
+            <i class="fas fa-book"></i>
+            <p>没有找到日记记录</p>
+            <p>尝试更改筛选条件或创建新日记</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 添加日记条目
+      filteredDiaries.forEach(diary => {
+        const diaryDate = new Date(diary.timestamp);
+        const formattedDate = `${diaryDate.getFullYear()}-${(diaryDate.getMonth()+1).toString().padStart(2, '0')}-${diaryDate.getDate().toString().padStart(2, '0')}`;
+        
+        // 提取纯文本预览（去除HTML标签）
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = diary.content;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        const preview = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+        
+        const moodEmoji = diary.mood.split(' ')[0];
+        
+        const diaryElement = document.createElement('div');
+        diaryElement.className = `history-item ${diary.id === currentDiaryId ? 'selected' : ''}`;
+        diaryElement.innerHTML = `
+          <div class="history-item-header">
+            <div class="history-item-date">${formattedDate}</div>
+            <div class="history-item-mood">${moodEmoji}</div>
+          </div>
+          <div class="history-item-title">${diary.title}</div>
+          <div class="history-item-preview">${preview}</div>
+          <div class="history-item-footer">
+            <span>${diary.weather}</span>
+            <span>${diary.location || '未记录地点'}</span>
+          </div>
+        `;
+        
+        diaryElement.addEventListener('click', () => loadDiary(diary.id));
+        historyList.appendChild(diaryElement);
+      });
+    }
+
+    // 加载特定日记
+    function loadDiary(id) {
+      const diary = diaries.find(d => d.id === id);
+      if (!diary) return;
+      
+      currentDiaryId = id;
+      
+      // 填充表单
+      document.getElementById("time").value = diary.time;
+      document.getElementById("weather").value = diary.weather;
+      document.getElementById("mood").value = diary.mood;
+      document.getElementById("location").value = diary.location || '';
+      document.getElementById("title").value = diary.title;
+      document.getElementById("diary-content").innerHTML = diary.content;
+      
+      // 重新加载历史记录以更新选中状态
+      loadDiaries();
+    }
+
+    // 删除当前日记
+    function deleteCurrentDiary() {
+      if (!currentDiaryId) {
+        alert('请先选择一篇日记！');
+        return;
+      }
+      
+      if (confirm('确定要删除这篇日记吗？此操作不可撤销。')) {
+        diaries = diaries.filter(d => d.id !== currentDiaryId);
+        localStorage.setItem('diaries', JSON.stringify(diaries));
+        alert('日记已删除！');
+        resetForm();
+        loadDiaries();
+      }
+    }
+
+    // 重置表单
+    function resetForm() {
+      currentDiaryId = null;
+      document.getElementById("time").value = new Date().toISOString().slice(0,16);
+      document.getElementById("weather").selectedIndex = 0;
+      document.getElementById("mood").selectedIndex = 0;
+      document.getElementById("location").value = '';
+      document.getElementById("title").value = '';
+      document.getElementById("diary-content").innerHTML = '开始记录今天的故事...';
+      clearCanvas();
+    }
+
+    // 清空所有内容
+    function clearAll() {
+      if (confirm('确定要清空所有内容吗？')) {
+        resetForm();
+      }
+    }
+
+    // 过滤日记
+    function filterDiaries(filter) {
+      // 更新按钮状态
+      document.getElementById('filter-all').classList.remove('active');
+      document.getElementById('filter-week').classList.remove('active');
+      document.getElementById('filter-month').classList.remove('active');
+      document.getElementById(`filter-${filter}`).classList.add('active');
+      
+      // 加载过滤后的日记
+      loadDiaries(filter);
+    }
+
+    // 导出日记
+    function exportDiaries() {
+      if (diaries.length === 0) {
+        alert('没有日记可以导出！');
+        return;
+      }
+      
+      const dataStr = JSON.stringify(diaries, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `我的日记_${new Date().toISOString().slice(0,10)}.json`;
+      link.click();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多媒体日记 - 优化版</title>
+    <style>
+        /* --- 全局样式 --- */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f7fa;
+            --border-color: #dcdfe6;
+            --font-color: #333;
+            --light-font-color: #888;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--secondary-color);
+            margin: 0;
+            padding: 2rem;
+            color: var(--font-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* --- 主容器 --- */
+        .diary-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+        
+        /* --- 头部 --- */
+        .diary-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fafbff;
+        }
+
+        .diary-header h1 {
+            margin: 0 0 1.5rem 0;
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+        
+        .meta-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--light-font-color);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .location-group {
+            display: flex;
+            align-items: center;
+        }
+        .location-group input {
+            flex-grow: 1;
+        }
+        .location-group button {
+            margin-left: 0.5rem;
+            padding: 0.75rem;
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .location-group button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* --- 编辑器 --- */
+        .diary-editor {
+            padding: 2rem;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            background-color: #fafafa;
+        }
+        
+        .toolbar-button {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .toolbar-button:hover {
+            background-color: #e0e0e0;
+        }
+        .toolbar-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        .toolbar-button[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        
+        .toolbar-separator {
+            width: 1px;
+            height: 20px;
+            background-color: var(--border-color);
+            margin: 0 0.5rem;
+        }
+
+        #diary-content {
+            min-height: 300px;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            outline: none;
+            background-color: white;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        #diary-content:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1) inset;
+        }
+        #diary-content img, #diary-content audio, #diary-content video {
+            max-width: 100%;
+            display: block;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+        
+        /* --- 底部操作 --- */
+        .diary-footer {
+            padding: 1rem 2rem;
+            text-align: right;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        #save-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #save-btn:hover {
+            background-color: #3a7bc8;
+        }
+        
+        /* --- 弹窗 (Modal) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 90%;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover, .close-btn:focus {
+            color: black;
+        }
+        
+        /* 涂鸦弹窗样式 */
+        #doodle-canvas {
+            border: 1px solid var(--border-color);
+            cursor: crosshair;
+            margin-bottom: 1rem;
+        }
+        .doodle-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Emoji 弹窗样式 */
+        #emoji-picker {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .emoji {
+            font-size: 1.5rem;
+            cursor: pointer;
+            text-align: center;
+            padding: 0.25rem;
+            border-radius: 4px;
+        }
+        .emoji:hover {
+            background-color: #f0f0f0;
+        }
+        
+        /* 隐藏原始文件输入框 */
+        .hidden-input {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="diary-container">
+        <header class="diary-header">
+            <h1>我的多媒体日记</h1>
+            <div class="meta-info">
+                <div class="form-group">
+                    <label for="time">时间</label>
+                    <input type="datetime-local" id="time">
+                </div>
+                <div class="form-group">
+                    <label for="weather">天气</label>
+                    <select id="weather">
+                        <option>☀️ 晴</option>
+                        <option>⛅ 多云</option>
+                        <option>🌥️ 阴</option>
+                        <option>🌧️ 雨</option>
+                        <option>🌨️ 雪</option>
+                        <option>🌪️ 风</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mood">心情</label>
+                    <select id="mood">
+                        <option>😊 开心</option>
+                        <option>😃 兴奋</option>
+                        <option>😌 平静</option>
+                        <option>😔 难过</option>
+                        <option>😠 生气</option>
+                        <option>😢 伤心</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="location">地点</label>
+                    <div class="location-group">
+                        <input type="text" id="location" placeholder="填写或自动获取">
+                        <button id="getLocationBtn" data-tooltip="获取当前位置">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="diary-editor">
+            <div class="toolbar">
+                <button class="toolbar-button" data-command="bold" data-tooltip="加粗"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4.25-4H7v14h7.04c2.1 0 3.71-1.33 3.71-3.26 0-1.55-.93-2.6-2.15-3.16zm-3.6-4.79h2.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-2.5V6zm3.5 9H9V11h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg></button>
+                <button class="toolbar-button" data-command="italic" data-tooltip="斜体"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg></button>
+                <button class="toolbar-button" data-command="underline" data-tooltip="下划线"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg></button>
+                <button class="toolbar-button" data-command="insertUnorderedList" data-tooltip="无序列表"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg></button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-button" id="insertImageBtn" data-tooltip="插入图片"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></button>
+                <button class="toolbar-button" id="recordAudioBtn" data-tooltip="录制语音"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z"/></svg></button>
+                <button class="toolbar-button" id="openDoodleBtn" data-tooltip="插入涂鸦"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+                <button class="toolbar-button" id="openEmojiBtn" data-tooltip="插入表情"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></button>
+                <input type="file" id="imageInput" class="hidden-input" accept="image/*" />
+            </div>
+            <div id="diary-content" contenteditable="true" spellcheck="false"></div>
+        </main>
+        
+        <footer class="diary-footer">
+            <button id="save-btn">保存日记</button>
+        </footer>
+    </div>
+    
+    <!-- 涂鸦弹窗 -->
+    <div id="doodle-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>涂鸦板</h2>
+            <div class="doodle-controls">
+                <label for="doodle-color">颜色:</label>
+                <input type="color" id="doodle-color" value="#000000">
+                <label for="doodle-size">粗细:</label>
+                <input type="range" id="doodle-size" min="1" max="20" value="5">
+                <button id="clear-canvas-btn">清空</button>
+            </div>
+            <canvas id="doodle-canvas" width="500" height="300"></canvas>
+            <br>
+            <button id="insert-doodle-btn">插入涂鸦</button>
+        </div>
+    </div>
+    
+    <!-- 表情弹窗 -->
+    <div id="emoji-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>选择表情</h2>
+            <div id="emoji-picker"></div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 元素获取 ---
+        const diaryContent = document.getElementById('diary-content');
+        
+        // --- 初始化 ---
+        const init = () => {
+            // 设置当前时间
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('time').value = now.toISOString().slice(0, 16);
+            
+            // 初始化表情选择器
+            initEmojiPicker();
+        };
+
+        // --- 富文本命令 ---
+        document.querySelectorAll('.toolbar-button[data-command]').forEach(button => {
+            button.addEventListener('click', () => {
+                const command = button.dataset.command;
+                document.execCommand(command, false, null);
+                diaryContent.focus();
+            });
+        });
+
+        // --- 插入内容辅助函数 ---
+        const insertHtmlAtCursor = (html) => {
+            diaryContent.focus();
+            if (window.getSelection) {
+                document.execCommand('insertHTML', false, html);
+            } else { // 兼容旧版IE
+                const range = document.selection.createRange();
+                range.pasteHTML(html);
+            }
+        };
+
+        // --- 插入图片 ---
+        const imageInput = document.getElementById('imageInput');
+        document.getElementById('insertImageBtn').addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const html = `<br><img src="${e.target.result}" alt="日记图片"><br>`;
+                    insertHtmlAtCursor(html);
+                };
+                reader.readAsDataURL(file);
+                imageInput.value = ''; // 重置以便下次选择同名文件
+            }
+        });
+
+        // --- 语音录制 ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        const recordBtn = document.getElementById('recordAudioBtn');
+        
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const html = `<br><audio controls src="${audioUrl}"></audio><br>`;
+                        insertHtmlAtCursor(html);
+                        audioChunks = [];
+                        stream.getTracks().forEach(track => track.stop()); // 释放麦克风
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.style.color = 'red';
+                    recordBtn.dataset.tooltip = "停止录制";
+                } catch (err) {
+                    console.error("无法获取麦克风:", err);
+                    alert("无法获取麦克风权限，请检查设置。");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.style.color = 'inherit';
+                recordBtn.dataset.tooltip = "录制语音";
+            }
+        });
+
+        // --- 弹窗管理 ---
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            const closeBtn = modal.querySelector('.close-btn');
+            closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // --- 涂鸦功能 ---
+        const doodleModal = document.getElementById('doodle-modal');
+        const doodleCanvas = document.getElementById('doodle-canvas');
+        const doodleCtx = doodleCanvas.getContext('2d');
+        let drawing = false;
+
+        document.getElementById('openDoodleBtn').addEventListener('click', () => doodleModal.classList.add('active'));
+        document.getElementById('clear-canvas-btn').addEventListener('click', () => {
+            doodleCtx.clearRect(0, 0, doodleCanvas.width, doodleCanvas.height);
+        });
+        
+        const startDrawing = (e) => {
+            drawing = true;
+            doodleCtx.beginPath(); // 每次按下鼠标开始新路径
+            draw(e);
+        };
+        const stopDrawing = () => {
+            drawing = false;
+            doodleCtx.beginPath(); // 抬起鼠标，路径断开
+        };
+        const draw = (e) => {
+            if (!drawing) return;
+            const rect = doodleCanvas.getBoundingClientRect();
+            // 考虑页面滚动和canvas缩放
+            const scaleX = doodleCanvas.width / rect.width;
+            const scaleY = doodleCanvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            doodleCtx.lineWidth = document.getElementById('doodle-size').value;
+            doodleCtx.strokeStyle = document.getElementById('doodle-color').value;
+            doodleCtx.lineCap = 'round';
+            doodleCtx.lineTo(x, y);
+            doodleCtx.stroke();
+            doodleCtx.beginPath();
+            doodleCtx.moveTo(x, y);
+        };
+
+        doodleCanvas.addEventListener('mousedown', startDrawing);
+        doodleCanvas.addEventListener('mouseup', stopDrawing);
+        doodleCanvas.addEventListener('mouseout', stopDrawing);
+        doodleCanvas.addEventListener('mousemove', draw);
+        
+        document.getElementById('insert-doodle-btn').addEventListener('click', () => {
+            const dataURL = doodleCanvas.toDataURL('image/png');
+            const html = `<br><img src="${dataURL}" alt="涂鸦"><br>`;
+            insertHtmlAtCursor(html);
+            doodleModal.classList.remove('active');
+            doodleCtx.clearRect(0, 0, doodleCanvas.width, doodleCanvas.height); // 清空
+        });
+
+        // --- 表情选择器 ---
+        const emojiModal = document.getElementById('emoji-modal');
+        const emojiPicker = document.getElementById('emoji-picker');
+        
+        const initEmojiPicker = () => {
+            const emojis = ['😊','😃','😁','😂','🤣','😍','😘','🥰','😎','🤩','🥳','😢','😭','😠','😡','🤔','😴','👍','👎','❤️','💔','🎉','✨','🔥','💯'];
+            emojis.forEach(emoji => {
+                const span = document.createElement('span');
+                span.className = 'emoji';
+                span.textContent = emoji;
+                span.addEventListener('click', () => {
+                    insertHtmlAtCursor(emoji);
+                    emojiModal.classList.remove('active');
+                });
+                emojiPicker.appendChild(span);
+            });
+        };
+
+        document.getElementById('openEmojiBtn').addEventListener('click', () => emojiModal.classList.add('active'));
+
+        // --- 获取地理位置 ---
+        document.getElementById('getLocationBtn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const { latitude, longitude } = pos.coords;
+                    // 使用一个简单的反向地理编码服务（注意：这可能需要API Key，此处仅为示例）
+                    // 为了简单起见，我们直接显示经纬度
+                    document.getElementById('location').value = `经度: ${longitude.toFixed(4)}, 纬度: ${latitude.toFixed(4)}`;
+                }, err => {
+                    alert('获取位置失败: ' + err.message);
+                });
+            } else {
+                alert('您的浏览器不支持地理位置功能。');
+            }
+        });
+        
+        // --- 保存日记 ---
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const title = `日记 - ${document.getElementById('time').value.replace('T', ' ')}`;
+            const metaHtml = `
+                <h2>${title}</h2>
+                <p><strong>天气:</strong> ${document.getElementById('weather').value}</p>
+                <p><strong>心情:</strong> ${document.getElementById('mood').value}</p>
+                <p><strong>地点:</strong> ${document.getElementById('location').value}</p>
+                <hr>
+            `;
+            const contentHtml = document.getElementById('diary-content').innerHTML;
+
+            const fullHtml = `
+                <!DOCTYPE html>
+                <html lang="zh-CN">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;}
+                        img, audio, video { max-width: 100%; }
+                    </style>
+                </head>
+                <body>
+                    ${metaHtml}
+                    ${contentHtml}
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${title}.html`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+
+        // 启动初始化
+        init();
+    });
+    </script>
+</body>
+</html>

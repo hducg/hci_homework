@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>多媒体日记</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#a8d1ff',
+            secondary: '#f7f9fc',
+            accent: '#74b9ff',
+            dark: '#2d3436',
+            button: '#60a5fa'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .diary-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .bg-pattern {
+        background-image: url('https://gips3.baidu.com/it/u=800779955,3982912215&fm=3074&app=3074&f=PNG?w=1440&h=2560');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-blend-mode: overlay;
+      }
+      .btn-effect {
+        transition: all 0.2s ease;
+      }
+      .btn-effect:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(96, 165, 250, 0.3);
+      }
+      .btn-effect:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(96, 165, 250, 0.2);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-secondary bg-pattern bg-opacity-10 min-h-screen">
+  <!-- 标题区域 -->
+  <header class="bg-primary bg-opacity-80 py-6 px-4 shadow-md">
+    <div class="container mx-auto">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-center text-gray-800 tracking-wide">
+        <i class="fa fa-book mr-3"></i>多媒体日记
+      </h1>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧：基本信息区域 -->
+      <div class="lg:w-1/3 bg-white rounded-xl p-6 diary-shadow">
+        <h2 class="text-xl font-semibold text-gray-800 mb-5 flex items-center">
+          <i class="fa fa-info-circle text-accent mr-2"></i>日记信息
+        </h2>
+        
+        <div class="space-y-5">
+          <!-- 时间选择 -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2" for="time">
+              <i class="fa fa-clock-o mr-1"></i>时间
+            </label>
+            <input type="datetime-local" id="time" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all" />
+          </div>
+          
+          <!-- 天气选择 -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2" for="weather">
+              <i class="fa fa-cloud mr-1"></i>天气
+            </label>
+            <select id="weather" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all">
+              <option>☀️ 晴</option>
+              <option>⛅ 多云</option>
+              <option>🌤️ 晴间多云</option>
+              <option>🌧️ 雨</option>
+              <option>🌨️ 雪</option>
+              <option>🌩️ 雷阵雨</option>
+              <option>🌫️ 雾</option>
+              <option>🌪️ 沙尘暴</option>
+            </select>
+          </div>
+          
+          <!-- 心情选择 -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2" for="mood">
+              <i class="fa fa-heart mr-1"></i>心情
+            </label>
+            <select id="mood" 
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all">
+              <option>😊 开心</option>
+              <option>😃 非常开心</option>
+              <option>😔 难过</option>
+              <option>😢 悲伤</option>
+              <option>😠 生气</option>
+              <option>😌 平静</option>
+              <option>😍 爱慕</option>
+              <option>😨 害怕</option>
+              <option>😴 疲惫</option>
+              <option>🤔 思考</option>
+            </select>
+          </div>
+          
+          <!-- 地点输入 -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2" for="location">
+              <i class="fa fa-map-marker mr-1"></i>地点
+            </label>
+            <input type="text" id="location" placeholder="请输入地点"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all" />
+          </div>
+          
+          <!-- 涂鸦区域 -->
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">
+              <i class="fa fa-paint-brush mr-1"></i>涂鸦板
+            </label>
+            <div class="border border-gray-300 rounded-lg overflow-hidden">
+              <canvas id="canvas" width="600" height="400" class="w-full"></canvas>
+              
+              <!-- 涂鸦工具栏 -->
+              <div class="bg-gray-50 p-3 flex flex-wrap gap-2 items-center">
+                <label class="text-sm text-gray-600">颜色:</label>
+                <input type="color" id="brushColor" value="#000000" class="w-8 h-8 p-0 border-0 rounded-full cursor-pointer">
+                
+                <label class="text-sm text-gray-600 ml-2">粗细:</label>
+                <input type="range" id="brushSize" min="1" max="10" value="2" class="w-24">
+                <span id="sizeValue" class="text-sm text-gray-600">2px</span>
+                
+                <button onclick="clearCanvas()" class="ml-auto text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded transition-colors">
+                  <i class="fa fa-eraser mr-1"></i>清空画布
+                </button>
+              </div>
+            </div>
+            <button onclick="insertDoodle()" class="mt-2 w-full bg-button text-white py-2 rounded-lg transition-colors btn-effect">
+              <i class="fa fa-image mr-1"></i>插入涂鸦
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 右侧：日记内容区域 -->
+      <div class="lg:w-2/3 bg-white rounded-xl p-6 diary-shadow">
+        <h2 class="text-xl font-semibold text-gray-800 mb-5 flex items-center">
+          <i class="fa fa-pencil text-accent mr-2"></i>日记内容
+        </h2>
+        
+        <!-- 事件与感想 -->
+        <div class="mb-6">
+          <label class="block text-gray-700 font-medium mb-2" for="diary-content">
+            事件与感想
+          </label>
+          <div id="diary-content" contenteditable="true" 
+               class="w-full min-h-[300px] border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-accent focus:border-accent transition-all outline-none"></div>
+        </div>
+        
+        <!-- 插入工具栏 -->
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+          <h3 class="text-gray-700 font-medium mb-3">插入内容</h3>
+          
+          <!-- 表情插入 -->
+          <div class="mb-4">
+            <label class="block text-sm text-gray-600 mb-2">表情:</label>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="insertEmoji('😊')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">😊</button>
+              <button onclick="insertEmoji('😢')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">😢</button>
+              <button onclick="insertEmoji('❤️')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">❤️</button>
+              <button onclick="insertEmoji('👍')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">👍</button>
+              <button onclick="insertEmoji('🎉')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">🎉</button>
+              <button onclick="insertEmoji('🔥')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">🔥</button>
+              <button onclick="insertEmoji('🤔')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">🤔</button>
+              <button onclick="insertEmoji('😍')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">😍</button>
+              <button onclick="insertEmoji('👏')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">👏</button>
+              <button onclick="insertEmoji('🤩')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">🤩</button>
+              <button onclick="insertEmoji('😎')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">😎</button>
+              <button onclick="insertEmoji('🥳')" class="text-2xl hover:bg-gray-200 p-1 rounded transition-colors">🥳</button>
+            </div>
+          </div>
+          
+          <!-- 媒体插入 -->
+          <div class="flex flex-wrap gap-3">
+            <label class="flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg cursor-pointer transition-colors">
+              <i class="fa fa-picture-o mr-2"></i>插入图片
+              <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" class="hidden" />
+            </label>
+            
+            <label class="flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg cursor-pointer transition-colors">
+              <i class="fa fa-microphone mr-2"></i>
+              <span id="audioStatus">录制语音</span>
+              <input type="file" id="audioInput" accept="audio/*" onchange="insertAudioFromFile()" class="hidden" />
+            </label>
+            
+            <button id="recordButton" class="flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-circle-o text-red-500 mr-2"></i>开始录音
+            </button>
+          </div>
+          
+          <!-- 语音录制状态 -->
+          <div id="recordingIndicator" class="hidden mt-3 text-sm text-gray-600">
+            <i class="fa fa-circle text-red-500 animate-pulse mr-1"></i>正在录音...
+          </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="mt-6 flex gap-4">
+          <button id="clearButton" class="flex-1 bg-button hover:bg-button/90 text-white py-3 rounded-lg text-lg font-medium transition-all btn-effect">
+            <i class="fa fa-trash mr-2"></i>清空内容
+          </button>
+          <button id="saveButton" class="flex-1 bg-button hover:bg-button/90 text-white py-3 rounded-lg text-lg font-medium transition-all btn-effect">
+            <i class="fa fa-save mr-2"></i>保存日记
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-12 py-4 bg-gray-100 bg-opacity-80">
+    <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+      <p>多媒体日记 &copy; 2023 - 记录生活的美好瞬间</p>
+    </div>
+  </footer>
+
+  <script>
+    // 初始化本地实时时间
+    window.onload = () => 
+    {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const localTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+      document.getElementById("time").value = localTime;
+    };
+
+    // 表情插入
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.setStartAfter(content.lastChild);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      content.focus();
+    }
+
+    // 插入图片
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'preview-img my-2 max-w-full h-auto rounded-lg shadow-sm';
+        
+        img.addEventListener('click', () => {
+          const modal = document.createElement('div');
+          modal.className = 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4';
+          modal.innerHTML = `<img src="${img.src}" class="max-h-[90vh] max-w-[90vw] object-contain" />`;
+          modal.addEventListener('click', () => modal.remove());
+          document.body.appendChild(modal);
+        });
+        
+        content.appendChild(document.createElement('br'));
+        content.appendChild(img);
+        content.appendChild(document.createElement('br'));
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 从文件插入音频
+    function insertAudioFromFile() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio my-2 w-full max-w-md">
+                               <source src="${e.target.result}" type="${file.type}">
+                               您的浏览器不支持音频播放
+                              </audio><br>`;
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 语音录制
+    let mediaRecorder;
+    let audioChunks = [];
+    const recordButton = document.getElementById('recordButton');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+    const audioStatus = document.getElementById('audioStatus');
+
+    recordButton.addEventListener('click', async () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        recordButton.innerHTML = '<i class="fa fa-circle-o text-red-500 mr-2"></i>开始录音';
+        recordingIndicator.classList.add('hidden');
+        audioStatus.textContent = '录制语音';
+      } else {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          
+          mediaRecorder.addEventListener('dataavailable', event => {
+            audioChunks.push(event.data);
+          });
+          
+          mediaRecorder.addEventListener('stop', () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            const content = document.getElementById("diary-content");
+            content.innerHTML += `<br><audio controls class="preview-audio my-2 w-full max-w-md">
+                                   <source src="${audioUrl}" type="audio/wav">
+                                   您的浏览器不支持音频播放
+                                  </audio><br>`;
+            
+            stream.getTracks().forEach(track => track.stop());
+          });
+          
+          mediaRecorder.start();
+          recordButton.innerHTML = '<i class="fa fa-stop mr-2"></i>停止录音';
+          recordingIndicator.classList.remove('hidden');
+          audioStatus.textContent = '或选择音频文件';
+        } catch (error) {
+          console.error('录音权限被拒绝:', error);
+          alert('无法访问麦克风，请确保已授予权限。');
+        }
+      }
+    });
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const brushColor = document.getElementById("brushColor");
+    const brushSize = document.getElementById("brushSize");
+    const sizeValue = document.getElementById("sizeValue");
+
+    brushSize.addEventListener('input', () => {
+      sizeValue.textContent = `${brushSize.value}px`;
+    });
+
+    function getCanvasScale() {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        scaleX: canvas.width / rect.width,
+        scaleY: canvas.height / rect.height
+      };
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scale = getCanvasScale();
+      
+      return {
+        x: (e.clientX - rect.left) * scale.scaleX,
+        y: (e.clientY - rect.top) * scale.scaleY
+      };
+    }
+
+    canvas.addEventListener("mousedown", (e) => {
+      const coords = getCanvasCoordinates(e);
+      startDrawing(coords.x, coords.y);
+    });
+
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    
+    canvas.addEventListener("mousemove", (e) => {
+      const coords = getCanvasCoordinates(e);
+      draw(coords.x, coords.y);
+    });
+
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const coords = getCanvasCoordinates(touch);
+      startDrawing(coords.x, coords.y);
+    });
+
+    canvas.addEventListener("touchend", (e) => {
+      e.preventDefault();
+      stopDrawing();
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const coords = getCanvasCoordinates(touch);
+      draw(coords.x, coords.y);
+    });
+
+    function startDrawing(x, y) {
+      drawing = true;
+      [lastX, lastY] = [x, y];
+    }
+
+    function stopDrawing() {
+      drawing = false;
+    }
+
+    function draw(x, y) {
+      if (!drawing) return;
+      
+      ctx.strokeStyle = brushColor.value;
+      ctx.lineWidth = brushSize.value;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      
+      [lastX, lastY] = [x, y];
+    }
+
+    // 清空画布
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 插入涂鸦
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      
+      const img = document.createElement('img');
+      img.src = dataURL;
+      img.className = 'preview-img my-2 max-w-full h-auto rounded-lg shadow-sm';
+      
+      img.addEventListener('click', () => {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4';
+        modal.innerHTML = `<img src="${img.src}" class="max-h-[90vh] max-w-[90vw] object-contain" />`;
+        modal.addEventListener('click', () => modal.remove());
+        document.body.appendChild(modal);
+      });
+      
+      content.appendChild(document.createElement('br'));
+      content.appendChild(img);
+      content.appendChild(document.createElement('br'));
+      clearCanvas();
+    }
+
+    // 清空内容
+    document.getElementById('clearButton').addEventListener('click', () => {
+      if (confirm('确定要清空所有内容吗？此操作不可恢复。')) {
+        document.getElementById('diary-content').innerHTML = '';
+        document.getElementById('location').value = '';
+        clearCanvas();
+        
+        const clearButton = document.getElementById('clearButton');
+        const originalText = clearButton.innerHTML;
+        clearButton.innerHTML = '<i class="fa fa-check mr-2"></i>已清空';
+        
+        setTimeout(() => {
+          clearButton.innerHTML = originalText;
+        }, 1500);
+      }
+    });
+
+    // 保存日记
+    document.getElementById('saveButton').addEventListener('click', () => {
+      const time = document.getElementById('time').value;
+      const weather = document.getElementById('weather').value;
+      const mood = document.getElementById('mood').value;
+      const location = document.getElementById('location').value;
+      const content = document.getElementById('diary-content').innerHTML;
+      
+      if (!time || !content.trim()) {
+        alert('请填写时间和日记内容');
+        return;
+      }
+      
+      const diaryData = {
+        id: Date.now(),
+        time,
+        weather,
+        mood,
+        location,
+        content,
+        createdAt: new Date().toISOString()
+      };
+      
+      const savedDiaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+      savedDiaries.push(diaryData);
+      localStorage.setItem('diaries', JSON.stringify(savedDiaries));
+      
+      const saveButton = document.getElementById('saveButton');
+      const originalText = saveButton.innerHTML;
+      saveButton.innerHTML = '<i class="fa fa-check mr-2"></i>保存成功!';
+      
+      setTimeout(() => {
+        saveButton.innerHTML = originalText;
+      }, 2000);
+      
+      console.log('日记已保存:', diaryData);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>多媒体日记</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 50px;
+      background: url("./picture/background.jpg");
+      background-size: cover;
+      background-attachment: fixed;
+      display: flex;               
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .bg-change-btn {
+      position: absolute;          
+      top: 35px;                   
+      right: 28px;                
+      background-color: rgba(255,255,255,0.8);
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+      z-index: 10;                
+    }
+
+    .bg-change-btn:hover {
+      background-color: rgba(125, 202, 247, 0.4);   
+      border: 1px solid rgba(21, 127, 214, 0.8);
+      box-shadow: 0 0 5px rgba(153, 201, 255, 0.5);
+      transform: translateY(-1px);
+      color:#09407e;
+    }
+
+    p{
+       color: #aaa;
+       margin-top:0px;
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.8);  
+      border-radius: 10px;                       
+      padding: 30px;
+      max-width: 900px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);   
+      position:relative;  
+    }   
+
+    h1 {
+      text-align:left;
+      margin-bottom:5px;
+      margin-top:0px;
+    }
+
+    button, input, select, textarea {
+      border-radius: 6px;      
+      border: 1px solid #ccc;
+      box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    }
+
+
+    .time-box,.mood-box,.weather-box,.location-box{
+      font-family:'Segoe UI', Arial, sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+      background-color: #fdfdfd;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 6px 10px;
+      transition: all 0.2s ease;
+    }
+
+    .time-box,.mood-box{
+      background-color: rgba(213, 247, 120, 0.4);   
+      border: 1px solid rgba(147, 214, 21, 0.8);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .weather-box,.location-box{
+      background-color: rgba(248, 255, 153, 0.4);  
+      border: 1px solid rgba(214, 179, 21, 0.8);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    .info-grid {
+      display: grid;                   
+      grid-template-columns: 1fr 1fr; 
+      gap: 15px 40px;                 
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      background-color: #f5f5f5;
+      color: #333;
+      height:25px;  
+      padding: 6px 12px;
+      margin-right: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .toolbar-buttons button:hover {
+      background-color: rgba(213, 247, 120, 0.4);   
+      border: 1px solid rgba(147, 214, 21, 0.8);
+      box-shadow: 0 0 5px rgba(153, 255, 162, 0.5);
+      transform: translateY(-1px);
+      color:#4b7e09;
+    }
+
+    .toolbar-buttons .upload-btn:hover{
+      background-color: rgba(248, 255, 153, 0.4);  
+      border: 1px solid rgba(214, 179, 21, 0.8);
+      box-shadow: 0 0 5px rgba(253, 255, 153, 0.5);
+      transform: translateY(-1px);
+      color:#7e6309;
+    }
+
+    .toolbar-buttons button{
+      display: inline-block;
+      width: 50px;     
+      height:40px;              
+      text-align: center;
+      border-radius: 8px;
+      padding: 8px 0;                
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .upload-btn::before {
+      margin-right: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    
+    #diary-content {
+      min-height: 200px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+    }
+
+    #canvas {
+      border: 1px solid #aaa;
+      cursor: crosshair;
+    }
+
+    .toolbar button {
+      margin-right: 10px;
+    }
+
+    .toolbar{
+       margin-top: 20px;
+    }
+
+    .toolbar-buttons {
+      display: flex;
+      justify-content: space-between;  
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .left-group,.right-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toolbar-title {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .thinks {
+      margin-top:20px;
+    }
+
+    .picture {
+      margin-top:20px;
+    }
+ 
+    .insert-btn {
+      display: inline-block;
+      width: 110px;                     
+      text-align: center;
+      background-color: rgba(213, 247, 120, 0.4);   
+      border: 1px solid rgba(147, 214, 21, 0.8);
+      box-shadow: 0 0 5px rgba(153, 255, 162, 0.5);
+      color:#000000;
+      padding: 5px 0;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .clear-btn {
+      background-color: rgba(248, 255, 153, 0.4);  
+      border: 1px solid rgba(214, 179, 21, 0.8);
+      box-shadow: 0 0 5px rgba(253, 255, 153, 0.5);
+      color:#000000;
+      margin-left: 10px;
+    }
+
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin-top: 10px;
+    }
+
+    .emoji {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="bg-change-btn">
+      🌄 切换背景
+    </div>
+
+    <div class="title">
+      <h1>我的多媒体日记</h1>
+      <p>轻松记录今天的心情、照片、声音与涂鸦</p>
+    </div>
+    
+  <div class="info-grid">
+    <div class="form-group">
+      <label>时间:</label>
+      <input type="datetime-local" id="time" class="time-box">
+    </div>
+
+    <div class="form-group">
+      <label>天气:</label>
+      <select id="weather" class="weather-box">
+        <option>☀️ 晴</option>
+        <option>⛅ 多云</option>
+        <option>🌧️ 雨</option>
+        <option>🌨️ 雪</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>地点:</label>
+      <input type="text" id="location" placeholder="请输入地点" class="location-box">
+    </div>
+
+    <div class="form-group">
+      <label>心情:</label>
+      <select id="mood" class="mood-box">
+        <option>😊 开心</option>
+        <option>😔 难过</option>
+        <option>😠 生气</option>
+        <option>😌 平静</option>
+      </select>
+    </div>
+
+    
+  </div>
+  
+
+  <div class="form-group thinks">
+    <label class="thinks-title">事件与感想:</label>
+    <div id="diary-content" contenteditable="true"></div>
+  </div>
+
+  <div class="form-group toolbar">
+    <label class="toolbar-title">插入（表情/图片/音频）：</label>
+    <div class="toolbar-buttons">
+      <div class="left-group">
+        <button onclick="insertEmoji('😊')">😊</button>
+        <button onclick="insertEmoji('😢')">😢</button>
+        <button onclick="insertEmoji('❤️')">❤️</button>
+      </div>
+    
+      <div class="right-group">
+        <label class="upload-btn">
+          📷 插入图片
+          <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" hidden>
+        </label>
+
+        <label class="upload-btn">
+          🎵 插入音频
+          <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" hidden>
+        </label>
+    </div>
+    </div>
+  </div>
+
+  <div class="form-group picture">
+    <label>涂鸦（点击后保存插入）:</label><br>
+    <canvas id="canvas" width="300" height="200"></canvas><br>
+
+    <button class="insert-btn" onclick="insertDoodle()">🎨 插入涂鸦</button>
+    <button class="insert-btn clear-btn" onclick="clearCanvas()">🧹 清除涂鸦</button>
+  </div>
+    
+  <script>
+
+    let bgIndex = 0;
+    const bgImages = [
+      './picture/background.jpg',
+      './picture/background2.jpg',
+      './picture/background3.jpg'
+    ];
+
+    const container = document.querySelector('body');
+    const bgBtn = document.querySelector('.bg-change-btn');
+
+    bgBtn.addEventListener('click', () => {
+        bgIndex = (bgIndex + 1) % bgImages.length;
+        container.style.backgroundImage = `url('${bgImages[bgIndex]}')`;
+        container.style.backgroundSize = 'cover';
+        container.style.backgroundPosition = 'center';
+    });
+
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    }
+
+    // 初始化时间为当前
+    window.onload = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      const local = `${year}-${month}-${day}T${hours}:${minutes}`;
+      document.getElementById("time").value = local;
+    };
+
+  </script>
+  </div>
+  
+</body>
+</html> 

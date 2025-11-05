@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <title>多媒体日记</title>
+  <style>
+    .container {
+      max-width: 1400px; 
+      margin: 0 auto; 
+     background-color: rgba(255, 255, 255, 0.9); 
+     padding: 30px;
+     border-radius: 10px; /* 圆角边框 */
+     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    }
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      background-color: #f7f9fc;
+      background-image: url("5.jpg");
+      background-size: cover; 
+      background-repeat: no-repeat; 
+      background-attachment: fixed; 
+      background-position: center; 
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px; /* 增加间距 */
+    }
+
+    label {
+      font-weight: bold;
+      color: #555;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input,textarea {
+      width: 50%;
+      padding: 8px; /* 增加内边距 */
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    select{
+      width: 15%; /* 适当加宽选择框 */
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    /* 文字内容区域样式 */
+    #diary-content {
+      min-height: 150px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+    }
+
+    /* 媒体内容区域样式 */
+    #media-content {
+      min-height: 150px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f9f9f9; /* 区分背景色 */
+      margin-top: 5px;
+    }
+
+    #canvas {
+      border: 1px solid #aaa;
+      cursor: crosshair;
+      background-color: white;
+    }
+
+    .toolbar button {
+      margin-right: 10px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: #f0f7ff;
+      cursor: pointer;
+    }
+    
+    .toolbar button:hover {
+      background-color: #e0efff;
+    }
+
+    .file-input-wrapper {
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 5px;
+    }
+    .file-input {
+      display: none;
+    }
+    .file-btn {
+      padding: 6px 12px;
+      background-color: #e0f2f1;
+      border: 1px solid #b2dfdb;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .file-btn:hover {
+      background-color: #b2dfdb;
+    }
+
+    /* 媒体预览样式 */
+    .preview-img, .preview-audio {
+      max-width: 100%;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+
+    .emoji {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container"> 
+  <h1>我的多媒体日记</h1>
+
+  <div class="form-group">
+    <label>时间:</label>
+    <input type="datetime-local" id="time">
+  </div>
+
+  <div class="form-group">
+    <label>天气:</label>
+    <select id="weather">
+      <option>☀️ 晴</option>
+      <option>⛅ 多云</option>
+      <option>🌧️ 雨</option>
+      <option>🌨️ 雪</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>心情:</label>
+    <select id="mood">
+      <option>😊 开心</option>
+      <option>😔 难过</option>
+      <option>😠 生气</option>
+      <option>😌 平静</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>地点:</label>
+    <input type="text" id="location" placeholder="请输入地点">
+  </div>
+
+  <!-- 文字内容区域 -->
+  <div class="form-group">
+    <label>事件与感想:</label>
+    <div id="diary-content" contenteditable="true" placeholder="请输入文字内容..."></div>
+  </div>
+
+  <!-- 新增媒体内容区域 -->
+  <div class="form-group">
+    <label>媒体内容（图片/音频）:</label>
+    <div id="media-content"></div>
+  </div>
+
+  <div class="form-group toolbar">
+    <label>插入：</label>
+    <!-- 表情插入到文字区域 -->
+    <button onclick="insertEmoji('😊')">😊</button>
+    <button onclick="insertEmoji('😢')">😢</button>
+    <button onclick="insertEmoji('❤️')">❤️</button>
+
+    <!-- 图片音频插入到媒体区域 -->
+    <div class="file-input-wrapper">
+      <label class="file-btn" for="imageInput">插入图片</label>
+      <input type="file" class="file-input" id="imageInput" accept="image/*" onchange="insertImage()" />
+    </div>
+    <div class="file-input-wrapper">
+      <label class="file-btn" for="audioInput">插入音频</label>
+      <input type="file" class="file-input" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>涂鸦（点击后保存插入到媒体区）:</label><br>
+    <canvas id="canvas" width="300" height="200"></canvas><br>
+    <button onclick="insertDoodle()">插入涂鸦</button>
+  </div>
+
+  <div class="form-group" style="margin-top: 30px; text-align: center;">
+  <button id="saveBtn" style="padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    保存
+    </button>
+  </div>
+
+  <script>
+    // 表情插入到文字内容区
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji;
+      // 聚焦到文字区域，方便继续输入
+      content.focus();
+    }
+
+    // 图片插入到媒体内容区
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const mediaContent = document.getElementById("media-content");
+        mediaContent.innerHTML += `<div class="media-item"><img src="${e.target.result}" class="preview-img"></div>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 音频插入到媒体内容区
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const mediaContent = document.getElementById("media-content");
+        mediaContent.innerHTML += `<div class="media-item"><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"> 您的浏览器不支持音频播放</audio></div>`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 涂鸦功能 - 插入到媒体内容区
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function insertDoodle() {
+      const mediaContent = document.getElementById("media-content");
+      const dataURL = canvas.toDataURL();
+      mediaContent.innerHTML += `<div class="media-item"><img src="${dataURL}" class="preview-img"></div>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // 初始化并保持实时北京时间
+    function updateBeijingTime() {
+      const now = new Date();
+      const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+      const localStr = beijingTime.toISOString().slice(0, 16);
+      document.getElementById("time").value = localStr;
+    }
+
+    window.onload = () => {
+      updateBeijingTime();
+      setInterval(updateBeijingTime, 1000);
+    }
+
+    // 保存功能保持不变（会同时保存文字和媒体内容）
+    document.getElementById("saveBtn").addEventListener("click", function() {
+      const container = document.querySelector(".container");
+      html2canvas(container, {
+        scale: 2,
+      }).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.download = `日记_${new Date().toLocaleDateString('zh-CN', {timeZone: 'Asia/Shanghai'}).replace(/\//g, '-')}.png`;
+        link.href = imgData;
+        link.click();
+      }).catch(err => {
+        console.error("保存失败：", err);
+        alert("保存失败，请重试！");
+      });
+    });
+  </script>
+</body>
+</html>

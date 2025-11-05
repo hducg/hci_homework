@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>我的多媒体日记</title>
+  <style>
+    /* 全局样式：统一间距与字体 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background-color: #f0f5f9;
+      color: #333;
+      line-height: 1.5;
+      padding: 20px 0;
+    }
+
+    /* 标题样式：居中且增加底部间距 */
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      padding: 15px 0;
+      margin: 0 auto 30px;
+      border-bottom: 2px solid #3498db;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    /* 容器样式：固定宽度+居中，增加内边距 */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* 登录面板：居中+优化尺寸与间距 */
+    #login-panel {
+      max-width: 450px;
+      margin: 30px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 日记面板：默认隐藏，统一内部间距 */
+    #diary-panel {
+      display: none;
+    }
+
+    /* 用户信息栏：优化对齐与间距 */
+    .user-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding: 10px 15px;
+      background-color: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    .user-info label {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* 表单组：统一间距与视觉风格 */
+    .form-group {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    .form-group:last-of-type {
+      margin-bottom: 30px;
+    }
+
+    /* 标签样式：统一间距与颜色 */
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    /* 输入框/下拉框：统一尺寸与边框 */
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    /* 富文本区域：优化高度与内边距 */
+    #diary-content {
+      min-height: 220px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 6px;
+      font-size: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    /* 工具栏：优化按钮间距 */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .toolbar button {
+      padding: 8px 15px;
+      background-color: #f1f5f9;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .toolbar button:hover {
+      background-color: #e2e8f0;
+    }
+    .toolbar input[type="file"] {
+      width: auto;
+      padding: 8px;
+    }
+
+    /* 按钮通用样式：统一尺寸与颜色 */
+    .action-btn {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    .action-btn:hover {
+      background-color: #024978;
+    }
+    .logout-btn {
+      background-color: #f44336;
+    }
+    .logout-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    /* 删除按钮：优化尺寸与位置 */
+    .delete-btn {
+      background-color: #e74c3c;
+      padding: 6px 12px;
+      margin-left: 10px;
+    }
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+
+    /* 日记列表：优化间距与视觉层次 */
+    .diary-list {
+      margin-top: 30px;
+    }
+    .diary-list h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .diary-item {
+      background-color: #fff;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .diary-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 日记头部：优化布局与换行 */
+    .entry-header {
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .diary-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    /* 提示消息：优化位置与样式 */
+    .message {
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin: 0 0 20px;
+      color: white;
+      text-align: center;
+      display: none;
+    }
+    .success {
+      background-color: #2ecc71;
+    }
+    .error {
+      background-color: #e74c3c;
+    }
+
+    /* 涂鸦区域：优化对齐与间距 */
+    #canvas {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    /* 登录提示：优化位置与颜色 */
+    #login-tip {
+      color: red;
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* 图片/音频预览：统一尺寸与间距 */
+    .preview-img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .preview-audio {
+      width: 100%;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 登录面板 -->
+  <div id="login-panel">
+    <h1>日记登录</h1>
+    <div class="form-group">
+      <label>用户名:</label>
+      <input type="text" id="login-username" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+      <label>密码:</label>
+      <input type="password" id="login-password" placeholder="请输入密码">
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="action-btn" onclick="userRegister()">注册</button>
+      <button class="action-btn" onclick="userLogin()">登录</button>
+    </div>
+    <p id="login-tip"></p>
+  </div>
+
+  <!-- 日记面板 -->
+  <div id="diary-panel" class="container">
+    <h1>我的多媒体日记</h1>
+    <div class="user-info">
+      <div>
+        <label>当前用户: <span id="current-username"></span></label>
+      </div>
+      <button class="action-btn logout-btn" onclick="userLogout()">退出登录</button>
+    </div>
+
+    <!-- 消息提示区域 -->
+    <div id="message" class="message"></div>
+
+    <div class="form-group">
+      <label>时间:</label>
+      <input type="datetime-local" id="time">
+    </div>
+
+    <div class="form-group">
+      <label>天气:</label>
+      <select id="weather">
+        <option>☀️ 晴</option>
+        <option>⛅ 多云</option>
+        <option>🌧️ 雨</option>
+        <option>🌨️ 雪</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>心情:</label>
+      <select id="mood">
+        <option>😊 开心</option>
+        <option>😔 难过</option>
+        <option>😠 生气</option>
+        <option>😌 平静</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>地点:</label>
+      <input type="text" id="location" placeholder="请输入地点">
+    </div>
+
+    <div class="form-group">
+      <label>事件与感想:</label>
+      <div id="diary-content" contenteditable="true"></div>
+    </div>
+
+    <div class="form-group toolbar">
+        <label>插入：</label>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+          <button onclick="insertEmoji('😊')">😊</button>
+          <button onclick="insertEmoji('😢')">😢</button>
+          <button onclick="insertEmoji('❤️')">❤️</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+          <span>选择图片：</span>
+          <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif" onchange="insertImage()" title="选择图片">
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span>选择音频：</span>
+          <input type="file" id="audioInput" accept="audio/mpeg,audio/wav,audio/mp3" onchange="insertAudio()" title="选择音频">
+        </div>
+      </div>
+      
+      
+      
+
+    <div class="form-group">
+      <label>涂鸦（点击后保存插入）:</label><br>
+      <canvas id="canvas" width="300" height="200"></canvas><br>
+      <button class="action-btn" style="padding: 8px 15px;" onclick="insertDoodle()">插入涂鸦</button>
+    </div>
+
+    <div style="display: flex; gap: 15px; justify-content: center;">
+      <button class="action-btn" onclick="saveDiary()">保存日记</button>
+      <button class="action-btn" onclick="showDiaryList()">查看我的日记</button>
+    </div>
+
+    <div class="diary-list" id="diary-list"></div>
+  </div>
+
+  <script>
+    // 用户登录注册相关逻辑
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0, 16);
+      document.getElementById("time").value = local;
+
+      const loginUser = localStorage.getItem('diary_login_user');
+      if (loginUser) {
+        showDiaryPanel(loginUser);
+      }
+    };
+
+    function userRegister() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      const tipEl = document.getElementById('login-tip');
+
+      if (!username || !password) {
+        tipEl.textContent = '用户名和密码不能为空';
+        return;
+      }
+
+      const allUsers = JSON.parse(localStorage.getItem('diary_all_users') || '{}');
+      if (allUsers[username]) {
+        tipEl.textContent = '该用户名已存在，请更换';
+        return;
+      }
+
+      allUsers[username] = password;
+      localStorage.setItem('diary_all_users', JSON.stringify(allUsers));
+      tipEl.textContent = '注册成功，请登录';
+      tipEl.style.color = 'green';
+    }
+
+    function userLogin() {
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+      const tipEl = document.getElementById('login-tip');
+      const allUsers = JSON.parse(localStorage.getItem('diary_all_users') || '{}');
+
+      if (!allUsers[username] || allUsers[username] !== password) {
+        tipEl.textContent = '用户名或密码错误';
+        return;
+      }
+
+      localStorage.setItem('diary_login_user', username);
+      showDiaryPanel(username);
+    }
+
+    function userLogout() {
+      localStorage.removeItem('diary_login_user');
+      document.getElementById('login-panel').style.display = 'block';
+      document.getElementById('diary-panel').style.display = 'none';
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-tip').textContent = '';
+    }
+
+    function showDiaryPanel(username) {
+      document.getElementById('login-panel').style.display = 'none';
+      document.getElementById('diary-panel').style.display = 'block';
+      document.getElementById('current-username').textContent = username;
+    }
+
+    // 显示消息提示
+    function showMessage(text, isSuccess = true) {
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = text;
+      messageEl.className = 'message ' + (isSuccess ? 'success' : 'error');
+      messageEl.style.display = 'block';
+      
+      setTimeout(() => {
+        messageEl.style.display = 'none';
+      }, 3000);
+    }
+
+    // 日记保存与查看相关逻辑
+    function saveDiary() {
+      const currentUser = localStorage.getItem('diary_login_user');
+      if (!currentUser) return;
+
+      const diaryData = {
+        id: Date.now(),
+        time: document.getElementById('time').value,
+        weather: document.getElementById('weather').value,
+        mood: document.getElementById('mood').value,
+        location: document.getElementById('location').value,
+        content: document.getElementById('diary-content').innerHTML,
+        createTime: new Date().toLocaleString()
+      };
+
+      const userDiaries = JSON.parse(localStorage.getItem(`diary_${currentUser}`) || '[]');
+      userDiaries.push(diaryData);
+      localStorage.setItem(`diary_${currentUser}`, JSON.stringify(userDiaries));
+
+      showMessage('日记保存成功！');
+      document.getElementById('location').value = '';
+      document.getElementById('diary-content').innerHTML = '';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function showDiaryList() {
+      const currentUser = localStorage.getItem('diary_login_user');
+      if (!currentUser) return;
+
+      const userDiaries = JSON.parse(localStorage.getItem(`diary_${currentUser}`) || '[]');
+      const listEl = document.getElementById('diary-list');
+
+      listEl.innerHTML = '<h3>我的日记列表</h3>';
+      if (userDiaries.length === 0) {
+        listEl.innerHTML += '<p style="text-align: center; padding: 20px; color: #666;">暂无保存的日记</p>';
+        return;
+      }
+
+      userDiaries.sort((a, b) => b.id - a.id).forEach(diary => {
+        const diaryEl = document.createElement('div');
+        diaryEl.className = 'diary-item';
+        diaryEl.setAttribute('data-id', diary.id);
+        
+        // 修复时间格式（替换T为空格）和地点显示位置
+        const formattedTime = diary.time.replace('T', ' ');
+        let locationHtml = diary.location ? `<span>${diary.location}</span>` : '';
+        
+        diaryEl.innerHTML = `
+          <div class="entry-header">
+            <div class="diary-meta">
+              <strong>记录时间：</strong>${formattedTime}
+              ${locationHtml}
+              <span>${diary.weather}</span>
+              <span>${diary.mood}</span>
+            </div>
+            <button class="action-btn delete-btn" onclick="deleteDiary(${diary.id})">删除</button>
+          </div>
+          <div style="padding-top: 10px;">
+            ${diary.content}
+          </div>
+        `;
+        listEl.appendChild(diaryEl);
+      });
+    }
+
+    // 删除日记功能
+    function deleteDiary(diaryId) {
+      const currentUser = localStorage.getItem('diary_login_user');
+      if (!currentUser) {
+        showMessage('请先登录', false);
+        return;
+      }
+
+      const diaryEl = document.querySelector(`.diary-item[data-id="${diaryId}"]`);
+      if (!diaryEl) {
+        showMessage('未找到该日记', false);
+        return;
+      }
+
+      if (!confirm('确定要删除这篇日记吗？此操作不可恢复。')) {
+        return;
+      }
+
+      try {
+        let userDiaries = JSON.parse(localStorage.getItem(`diary_${currentUser}`) || '[]');
+        const initialLength = userDiaries.length;
+        
+        userDiaries = userDiaries.filter(diary => diary.id !== diaryId);
+        
+        if (userDiaries.length === initialLength) {
+          showMessage('删除失败，未找到该日记', false);
+          return;
+        }
+        
+        localStorage.setItem(`diary_${currentUser}`, JSON.stringify(userDiaries));
+        
+        diaryEl.style.transform = 'translateX(20px)';
+        diaryEl.style.opacity = '0';
+        diaryEl.style.height = diaryEl.offsetHeight + 'px';
+        diaryEl.style.overflow = 'hidden';
+        diaryEl.style.transition = 'all 0.3s ease-out';
+        
+        setTimeout(() => {
+          diaryEl.remove();
+          if (userDiaries.length === 0) {
+            document.getElementById('diary-list').innerHTML += '<p style="text-align: center; padding: 20px; color: #666;">暂无保存的日记</p>';
+          }
+          showMessage('日记已成功删除');
+        }, 300);
+        
+      } catch (error) {
+        console.error('删除日记出错:', error);
+        showMessage('删除失败，请稍后重试', false);
+      }
+    }
+
+    // 多媒体功能：修复文件类型报错
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.innerHTML += emoji + ' ';
+      content.focus();
+    }
+
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+
+      // 验证文件类型，避免报错
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        showMessage('不支持该图片格式，请选择JPG/PNG/GIF', false);
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+
+      // 验证文件类型，避免报错
+      const validTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3'];
+      if (!validTypes.includes(file.type)) {
+        showMessage('不支持该音频格式，请选择MP3/WAV', false);
+        input.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"> 您的浏览器不支持音频播放功能。<br>`;
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    // 涂鸦功能
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      ctx.fillStyle = "black";
+      ctx.beginPath();
+      ctx.arc(e.offsetX, e.offsetY, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      content.innerHTML += `<br><img src="${dataURL}" class="preview-img"><br>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  </script>
+</body>
+</html>

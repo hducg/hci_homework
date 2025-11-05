@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>多媒体日记</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            background-color: #f7f9fc;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #diary-content {
+            min-height: 200px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        #canvas {
+            border: 1px solid #aaa;
+            cursor: crosshair;
+            border-radius: 4px;
+        }
+
+        .toolbar button {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+            .toolbar button:hover {
+                background: #f0f0f0;
+            }
+
+        .preview-img, .preview-audio {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        .emoji {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .diary-item strong {
+            color: #555;
+        }
+
+        /* 整合工具栏样式 */
+        .toolbar-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .main-toolbar-btn {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .dropdown-toolbar {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 10;
+            min-width: 200px;
+        }
+
+            .dropdown-toolbar.active {
+                display: block;
+            }
+
+            .dropdown-toolbar button {
+                margin: 5px 0;
+                width: 100%;
+                text-align: left;
+            }
+
+            .dropdown-toolbar input {
+                margin: 5px 0;
+            }
+
+        /* 涂鸦区折叠样式 */
+        .doodle-container {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            max-height: 0;
+        }
+
+        .doodle-container.expanded {
+            max-height: 500px; /* 足够容纳画布和工具 */
+        }
+
+        .doodle-toggle {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 新的画笔设置区域 */
+        .brush-settings {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .brush-preview {
+            width: 100px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brush-color-selector {
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            background: transparent;
+        }
+
+        .brush-size-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brush-size-control input {
+            width: 80px;
+        }
+
+        .doodle-actions {
+            margin-left: auto;
+        }
+
+        .doodle-actions button {
+            margin-left: 5px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>我的多媒体日记</h1>
+
+    <div class="form-group">
+        <label>时间:</label>
+        <input type="datetime-local" id="time">
+    </div>
+
+    <div class="form-group">
+        <label>天气:</label>
+        <select id="weather">
+            <option>☀️ 晴</option>
+            <option>⛅ 多云</option>
+            <option>🌧️ 雨</option>
+            <option>🌨️ 雪</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>心情:</label>
+        <select id="mood">
+            <option>😊 开心</option>
+            <option>😔 难过</option>
+            <option>😠 生气</option>
+            <option>😌 平静</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>地点:</label>
+        <input type="text" id="location" placeholder="请输入地点">
+    </div>
+
+    <div class="form-group">
+        <label>事件与感想:</label>
+        <div id="diary-content" contenteditable="true"></div>
+
+        <!-- 整合的下拉工具栏 -->
+        <div class="toolbar-container">
+            <button class="main-toolbar-btn" id="toolbarToggle">插入内容 ▼</button>
+            <div class="dropdown-toolbar" id="dropdownToolbar">
+                <label>表情:</label>
+                <div>
+                    <button onclick="insertEmoji('😊')">😊 开心</button>
+                    <button onclick="insertEmoji('😢')">😢 难过</button>
+                    <button onclick="insertEmoji('❤️')">❤️ 爱心</button>
+                    <button onclick="insertEmoji('🎉')">🎉 庆祝</button>
+                    <button onclick="insertEmoji('👍')">👍 点赞</button>
+                </div>
+
+                <label style="margin-top: 10px;">图片:</label>
+                <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+
+                <label style="margin-top: 10px;">音频:</label>
+                <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+            </div>
+        </div>
+    </div>
+
+    <!-- 可折叠的涂鸦区 -->
+    <div class="form-group">
+        <button class="doodle-toggle" id="doodleToggle">添加涂鸦 ▶️</button>
+        <div class="doodle-container" id="doodleContainer">
+            <!-- 新的画笔设置区域（整合颜色和粗细） -->
+            <div class="brush-settings">
+                <div>
+                    <label>画笔颜色:</label>
+                    <input type="color" id="brushColor" class="brush-color-selector" value="#000000">
+                </div>
+
+                <div class="brush-size-control">
+                    <label>画笔粗细:</label>
+                    <input type="number" id="brushSize" min="1" max="20" value="2">
+                </div>
+
+                <div class="brush-preview" id="brushPreview">
+                    <div id="previewLine" style="height: 2px; width: 80px; background: black;"></div>
+                </div>
+
+                <div class="doodle-actions">
+                    <button id="eraserBtn">橡皮擦</button>
+                    <button id="clearCanvasBtn">清空画布</button>
+                </div>
+            </div>
+
+            <canvas id="canvas" width="300" height="200"></canvas><br>
+            <button onclick="insertDoodle()">插入涂鸦</button>
+        </div>
+    </div>
+
+    <!-- 保存按钮和状态提示 -->
+    <div class="form-group">
+        <button id="saveBtn" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            保存日记
+        </button>
+        <span id="saveStatus" style="margin-left: 10px; color: #666;"></span>
+    </div>
+
+    <!-- 编辑模式控制按钮（默认隐藏） -->
+    <div class="form-group" id="editControls" style="display: none;">
+        <button id="updateBtn" style="padding: 10px 20px; background: #ff9800; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+            更新日记
+        </button>
+        <button id="cancelBtn" style="padding: 10px 20px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            取消编辑
+        </button>
+    </div>
+
+    <!-- 历史日记列表 -->
+    <div class="form-group">
+        <h3>历史日记</h3>
+        <div id="diaryList" style="border: 1px solid #eee; padding: 10px; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        // 表情插入
+        function insertEmoji(emoji) {
+            const content = document.getElementById("diary-content");
+            content.innerHTML += emoji;
+            toggleToolbar();
+            content.focus();
+        }
+
+        // 图片插入
+        function insertImage() {
+            const input = document.getElementById("imageInput");
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = document.getElementById("diary-content");
+                content.innerHTML += `<br><img src="${e.target.result}" class="preview-img"><br>`;
+                input.value = "";
+            };
+            reader.readAsDataURL(file);
+            toggleToolbar();
+        }
+
+        // 音频插入
+        function insertAudio() {
+            const input = document.getElementById("audioInput");
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = document.getElementById("diary-content");
+                content.innerHTML += `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`;
+                input.value = "";
+            };
+            reader.readAsDataURL(file);
+            toggleToolbar();
+        }
+
+        // 涂鸦功能
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+        let isEraser = false; // 橡皮擦状态标记
+
+        // 获取工具控件
+        const brushColor = document.getElementById("brushColor");
+        const brushSize = document.getElementById("brushSize");
+        const eraserBtn = document.getElementById("eraserBtn");
+        const clearCanvasBtn = document.getElementById("clearCanvasBtn");
+        const previewLine = document.getElementById("previewLine");
+
+        // 初始化画笔设置
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        updateBrushPreview();
+
+        // 实时更新画笔预览
+        function updateBrushPreview() {
+            // 根据橡皮擦状态显示不同的预览
+            if (isEraser) {
+                previewLine.style.background = "#ffffff";
+                previewLine.style.border = "1px solid #ccc";
+                previewLine.style.height = `${2}px`; // 橡皮擦固定细边框
+            } else {
+                previewLine.style.background = brushColor.value;
+                previewLine.style.border = "none";
+                previewLine.style.height = `${brushSize.value}px`;
+            }
+        }
+
+        // 监听颜色和粗细变化，实时更新预览和画笔
+        brushColor.addEventListener("input", updateBrushPreview);
+        brushSize.addEventListener("input", updateBrushPreview);
+
+        // 鼠标事件监听
+        canvas.addEventListener("mousedown", startDrawing);
+        canvas.addEventListener("mouseup", stopDrawing);
+        canvas.addEventListener("mouseout", stopDrawing);
+        canvas.addEventListener("mousemove", draw);
+
+        // 开始绘制
+        function startDrawing(e) {
+            drawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.moveTo(x, y);
+        }
+
+        // 停止绘制
+        function stopDrawing() {
+            drawing = false;
+        }
+
+        // 绘制函数
+        function draw(e) {
+            if (!drawing) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // 根据状态设置画笔样式
+            ctx.strokeStyle = isEraser ? "#ffffff" : brushColor.value;
+            ctx.lineWidth = isEraser ? 10 : brushSize.value; // 橡皮擦默认更粗
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // 橡皮擦切换
+        eraserBtn.addEventListener("click", () => {
+            isEraser = !isEraser;
+            eraserBtn.style.backgroundColor = isEraser ? "#ff9800" : "";
+            eraserBtn.style.color = isEraser ? "white" : "";
+            updateBrushPreview(); // 更新预览
+        });
+
+        // 清空画布
+        clearCanvasBtn.addEventListener("click", () => {
+            if (confirm("确定要清空画布吗？")) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        });
+
+        // 插入涂鸦
+        function insertDoodle() {
+            const content = document.getElementById("diary-content");
+            const dataURL = canvas.toDataURL();
+            content.innerHTML += `<br><img src="${dataURL}" class="preview-img" data-type="doodle"><br>`;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            toggleDoodle();
+        }
+
+        // 工具栏折叠/展开控制
+        function toggleToolbar() {
+            const dropdown = document.getElementById("dropdownToolbar");
+            dropdown.classList.toggle("active");
+        }
+
+        // 涂鸦区折叠/展开控制
+        function toggleDoodle() {
+            const container = document.getElementById("doodleContainer");
+            const button = document.getElementById("doodleToggle");
+            container.classList.toggle("expanded");
+
+            if (container.classList.contains("expanded")) {
+                button.textContent = "收起涂鸦 ▼";
+            } else {
+                button.textContent = "添加涂鸦 ▶️";
+            }
+        }
+
+        // 日记数据管理
+        let editingDiaryId = null;
+
+        function saveDiary() {
+            const diaryData = {
+                id: Date.now(),
+                time: document.getElementById("time").value,
+                weather: document.getElementById("weather").value,
+                mood: document.getElementById("mood").value,
+                location: document.getElementById("location").value,
+                content: document.getElementById("diary-content").innerHTML,
+                createTime: new Date().toLocaleString()
+            };
+
+            const savedDiaries = JSON.parse(localStorage.getItem("diaries") || "[]");
+            savedDiaries.push(diaryData);
+            localStorage.setItem("diaries", JSON.stringify(savedDiaries));
+
+            const statusEl = document.getElementById("saveStatus");
+            statusEl.textContent = "日记保存成功！";
+            statusEl.style.color = "green";
+            setTimeout(() => statusEl.textContent = "", 3000);
+
+            renderDiaryList();
+        }
+
+        function loadDiary(id) {
+            const savedDiaries = JSON.parse(localStorage.getItem("diaries") || "[]");
+            const diary = savedDiaries.find(item => item.id === id);
+
+            if (diary) {
+                document.getElementById("time").value = diary.time;
+                document.getElementById("weather").value = diary.weather;
+                document.getElementById("mood").value = diary.mood;
+                document.getElementById("location").value = diary.location;
+                document.getElementById("diary-content").innerHTML = diary.content;
+
+                editingDiaryId = id;
+                document.getElementById("editControls").style.display = "block";
+                document.getElementById("saveBtn").style.display = "none";
+            }
+        }
+
+        function updateDiary() {
+            if (editingDiaryId === null) return;
+
+            const savedDiaries = JSON.parse(localStorage.getItem("diaries") || "[]");
+            const diaryIndex = savedDiaries.findIndex(item => item.id === editingDiaryId);
+
+            if (diaryIndex !== -1) {
+                savedDiaries[diaryIndex] = {
+                    ...savedDiaries[diaryIndex],
+                    time: document.getElementById("time").value,
+                    weather: document.getElementById("weather").value,
+                    mood: document.getElementById("mood").value,
+                    location: document.getElementById("location").value,
+                    content: document.getElementById("diary-content").innerHTML
+                };
+
+                localStorage.setItem("diaries", JSON.stringify(savedDiaries));
+
+                const statusEl = document.getElementById("saveStatus");
+                statusEl.textContent = "日记更新成功！";
+                statusEl.style.color = "orange";
+                setTimeout(() => statusEl.textContent = "", 3000);
+
+                cancelEdit();
+                renderDiaryList();
+            }
+        }
+
+        function deleteDiary(id) {
+            if (!confirm("确定要删除这篇日记吗？")) return;
+
+            let savedDiaries = JSON.parse(localStorage.getItem("diaries") || "[]");
+            savedDiaries = savedDiaries.filter(item => item.id !== id);
+
+            localStorage.setItem("diaries", JSON.stringify(savedDiaries));
+
+            const statusEl = document.getElementById("saveStatus");
+            statusEl.textContent = "日记已删除！";
+            statusEl.style.color = "red";
+            setTimeout(() => statusEl.textContent = "", 3000);
+
+            if (editingDiaryId === id) {
+                cancelEdit();
+            }
+
+            renderDiaryList();
+        }
+
+        function cancelEdit() {
+            editingDiaryId = null;
+            document.getElementById("editControls").style.display = "none";
+            document.getElementById("saveBtn").style.display = "inline-block";
+
+            const now = new Date();
+            const local = now.toISOString().slice(0, 16);
+            document.getElementById("time").value = local;
+            document.getElementById("location").value = "";
+            document.getElementById("diary-content").innerHTML = "";
+        }
+
+        function renderDiaryList() {
+            const diaryListEl = document.getElementById("diaryList");
+            const savedDiaries = JSON.parse(localStorage.getItem("diaries") || "[]");
+            diaryListEl.innerHTML = "";
+
+            savedDiaries.reverse().forEach(diary => {
+                const diaryItem = document.createElement("div");
+                diaryItem.className = "diary-item";
+                diaryItem.style.padding = "10px";
+                diaryItem.style.borderBottom = "1px dashed #eee";
+                diaryItem.style.marginBottom = "10px";
+                diaryItem.innerHTML = `
+              <div><strong>时间：</strong>${diary.time || "未设置"}</div>
+              <div><strong>天气：</strong>${diary.weather}</div>
+              <div><strong>心情：</strong>${diary.mood}</div>
+              <div style="margin-top: 8px;">
+                <button onclick="loadDiary(${diary.id})" style="margin-right: 5px; padding: 5px 10px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                  编辑
+                </button>
+                <button onclick="deleteDiary(${diary.id})" style="padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                  删除
+                </button>
+              </div>
+            `;
+                diaryListEl.appendChild(diaryItem);
+            });
+        }
+
+        // 页面初始化
+        window.onload = () => {
+            const now = new Date();
+            const local = now.toISOString().slice(0, 16);
+            document.getElementById("time").value = local;
+
+            renderDiaryList();
+
+            document.getElementById("saveBtn").addEventListener("click", saveDiary);
+            document.getElementById("updateBtn").addEventListener("click", updateDiary);
+            document.getElementById("cancelBtn").addEventListener("click", cancelEdit);
+            document.getElementById("toolbarToggle").addEventListener("click", toggleToolbar);
+            document.getElementById("doodleToggle").addEventListener("click", toggleDoodle);
+
+            document.addEventListener("click", (e) => {
+                const toolbarContainer = document.querySelector(".toolbar-container");
+                if (!toolbarContainer.contains(e.target)) {
+                    document.getElementById("dropdownToolbar").classList.remove("active");
+                }
+            });
+        };
+    </script>
+</body>
+</html>

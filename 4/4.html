@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多媒体日记 - 升级版</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+            transition: background-color 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .label-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .help-icon {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: help;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+            .help-icon:hover::after {
+                content: attr(data-tooltip);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #2c3e50;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 5px;
+                font-size: 12px;
+                white-space: nowrap;
+                z-index: 100;
+                margin-bottom: 5px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            }
+
+        label {
+            font-weight: 600;
+            color: #34495e;
+            flex-grow: 1;
+            margin: 0;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+            input:focus, select:focus, textarea:focus {
+                outline: none;
+                border-color: #3498db;
+            }
+
+        #diary-content {
+            min-height: 250px;
+            border: 2px solid #bdc3c7;
+            padding: 15px;
+            background-color: #fdfdfd;
+            border-radius: 8px;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        #canvas {
+            border: 2px solid #bdc3c7;
+            cursor: crosshair;
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+            .toolbar button {
+                padding: 8px 12px;
+                border: none;
+                border-radius: 5px;
+                background: #3498db;
+                color: white;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+
+                .toolbar button:hover {
+                    background: #2980b9;
+                }
+
+        .file-input {
+            padding: 8px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+        }
+
+        .preview-img, .preview-audio {
+            max-width: 100%;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .image-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+            .image-control input[type="range"] {
+                flex: 1;
+                max-width: 200px;
+            }
+
+        .insert-btn {
+            background: #27ae60;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+            .insert-btn:hover {
+                background: #229954;
+            }
+
+        .cancel-btn {
+            background: #e74c3c;
+        }
+
+            .cancel-btn:hover {
+                background: #c0392b;
+            }
+
+        .save-btn {
+            background: #27ae60;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 100%;
+        }
+
+            .save-btn:hover {
+                background: #229954;
+            }
+
+        .bg-settings {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+        }
+
+        .bg-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+            .bg-input input {
+                flex: 1;
+            }
+
+        .doodle-tools {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+            .doodle-tools button {
+                padding: 5px 10px;
+                font-size: 14px;
+            }
+
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .doodle-size-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+            .doodle-size-control input[type="range"] {
+                width: 80px;
+            }
+
+        .insert-section {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+            min-width: 200px;
+        }
+
+            .insert-section label {
+                font-weight: normal;
+                color: #666;
+                font-size: 14px;
+            }
+
+        .emoji-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            background: linear-gradient(to bottom, #f9f9f9, #f0f0f0);
+            min-width: 250px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+            .emoji-section label {
+                font-weight: bold;
+                color: #34495e;
+                font-size: 14px;
+                margin-bottom: 5px;
+            }
+
+        .emoji-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .emoji-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+            .emoji-btn:hover {
+                border-color: #3498db;
+                transform: scale(1.1);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+
+        .more-emoji-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+            align-self: flex-start;
+        }
+
+            .more-emoji-btn:hover {
+                background: linear-gradient(135deg, #2980b9, #1f5f8b);
+            }
+
+        .emoji-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+
+            .emoji-modal.active {
+                display: block;
+            }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+            .emoji-grid button {
+                background: white;
+                border: 2px solid #e0e0e0;
+                border-radius: 50%;
+                width: 44px;
+                height: 44px;
+                font-size: 24px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+                .emoji-grid button:hover {
+                    border-color: #3498db;
+                    transform: scale(1.1);
+                }
+
+        .close-modal {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        }
+
+            .close-modal:hover {
+                background: #c0392b;
+            }
+
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .insert-section, .emoji-section {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>我的多媒体日记</h1>
+
+        <div class="form-group bg-settings">
+            <div class="label-container">
+                <label>页面背景设置:</label>
+                <button class="help-icon" data-tooltip="设置页面背景颜色或上传图片作为背景，自适应页面大小。">?</button>
+            </div>
+            <div class="bg-input">
+                <input type="color" id="bgColor" value="#f0f4f8" onchange="setBackground()">
+                <input type="file" id="bgImage" accept="image/*" onchange="setBackgroundImage()">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <div class="label-container">
+                    <label>年:</label>
+                    <button class="help-icon" data-tooltip="选择日记年份，范围1900-2100。">?</button>
+                </div>
+                <input type="number" id="year" min="1900" max="2100" value="2025">
+            </div>
+            <div class="form-group">
+                <div class="label-container">
+                    <label>月:</label>
+                    <button class="help-icon" data-tooltip="选择月份，1-12。">?</button>
+                </div>
+                <input type="number" id="month" min="1" max="12" value="10">
+            </div>
+            <div class="form-group">
+                <div class="label-container">
+                    <label>日:</label>
+                    <button class="help-icon" data-tooltip="选择日期，1-31，根据月份调整。">?</button>
+                </div>
+                <input type="number" id="day" min="1" max="31" value="22">
+            </div>
+            <div class="form-group">
+                <div class="label-container">
+                    <label>时:</label>
+                    <button class="help-icon" data-tooltip="选择小时，0-23。">?</button>
+                </div>
+                <input type="number" id="hour" min="0" max="23" value="0">
+            </div>
+            <div class="form-group">
+                <div class="label-container">
+                    <label>分:</label>
+                    <button class="help-icon" data-tooltip="选择分钟，0-59。">?</button>
+                </div>
+                <input type="number" id="minute" min="0" max="59" value="0">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="label-container">
+                <label>天气:</label>
+                <button class="help-icon" data-tooltip="选择当天的天气状况。">?</button>
+            </div>
+            <select id="weather">
+                <option>☀️ 晴</option>
+                <option>⛅ 多云</option>
+                <option>☁️ 阴</option>
+                <option>🌧️ 雨</option>
+                <option>🌨️ 雪</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <div class="label-container">
+                <label>心情:</label>
+                <button class="help-icon" data-tooltip="记录当天的整体心情。">?</button>
+            </div>
+            <select id="mood">
+                <option>😊 开心</option>
+                <option>😔 难过</option>
+                <option>😠 生气</option>
+                <option>😌 平静</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <div class="label-container">
+                <label>地点:</label>
+                <button class="help-icon" data-tooltip="记录事件发生的地点。">?</button>
+            </div>
+            <input type="text" id="location" placeholder="请输入地点">
+        </div>
+
+        <div class="form-group">
+            <div class="label-container">
+                <label>事件与感想:</label>
+                <button class="help-icon" data-tooltip="在这里输入当天的详细事件描述和个人感想，支持富文本编辑。">?</button>
+            </div>
+            <div id="diary-content" contenteditable="true"></div>
+        </div>
+
+        <div class="form-group toolbar">
+            <div class="label-container">
+                <label>插入：</label>
+                <button class="help-icon" data-tooltip="通过表情、图片、音频或涂鸦丰富日记内容。">?</button>
+            </div>
+
+            <div class="emoji-section">
+                <label>插入表情</label>
+                <div class="emoji-row">
+                    <button class="emoji-btn" onclick="insertEmoji('😊')">😊</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😢')">😢</button>
+                    <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😂')">😂</button>
+                    <button class="emoji-btn" onclick="insertEmoji('😎')">😎</button>
+                </div>
+                <button class="more-emoji-btn" onclick="openEmojiModal()">更多表情</button>
+            </div>
+
+            <div class="insert-section">
+                <label>插入图片</label>
+                <div id="image-toolbar">
+                    <input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageSelect()" />
+                </div>
+            </div>
+
+            <div class="insert-section">
+                <label>插入音频</label>
+                <div id="audio-toolbar">
+                    <input type="file" id="audioInput" class="file-input" accept="audio/*" onchange="handleAudioSelect()" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="label-container">
+                <label>涂鸦（点击后保存插入）:</label>
+                <button class="help-icon" data-tooltip="在画布上自由涂鸦，调整颜色和大小后插入到日记中。支持清空和撤回。">?</button>
+            </div><br>
+            <canvas id="canvas" width="600" height="400"></canvas><br>
+            <div class="doodle-tools">
+                <input type="color" id="doodleColor" class="color-picker" value="#000000" onchange="changeDoodleColor(this.value)">
+                <div class="doodle-size-control">
+                    <label style="font-size: 12px;">大小:</label>
+                    <input type="range" id="doodleSize" min="50" max="500" value="200" onchange="updateDoodleSizeDisplay(this.value)">
+                    <span id="doodleSizeDisplay">200px</span>
+                </div>
+                <button class="toolbar" onclick="clearCanvas()">清空</button>
+                <button class="toolbar" onclick="undoDoodle()">撤回</button>
+                <button class="toolbar insert-btn" onclick="insertDoodle()">插入涂鸦</button>
+            </div>
+        </div>
+
+        <button class="save-btn" onclick="saveDiary()">保存日记 (Ctrl+S)</button>
+    </div>
+
+    <!-- 表情模态框 -->
+    <div id="emojiModal" class="emoji-modal">
+        <button class="close-modal" onclick="closeEmojiModal()">关闭</button>
+        <h3>选择表情</h3>
+        <div class="emoji-grid">
+            <button onclick="insertEmojiFromModal('😊')">😊</button>
+            <button onclick="insertEmojiFromModal('😢')">😢</button>
+            <button onclick="insertEmojiFromModal('❤️')">❤️</button>
+            <button onclick="insertEmojiFromModal('😂')">😂</button>
+            <button onclick="insertEmojiFromModal('😎')">😎</button>
+            <button onclick="insertEmojiFromModal('😡')">😡</button>
+            <button onclick="insertEmojiFromModal('🥰')">🥰</button>
+            <button onclick="insertEmojiFromModal('🤔')">🤔</button>
+            <button onclick="insertEmojiFromModal('👍')">👍</button>
+            <button onclick="insertEmojiFromModal('👎')">👎</button>
+            <button onclick="insertEmojiFromModal('🎉')">🎉</button>
+            <button onclick="insertEmojiFromModal('🔥')">🔥</button>
+            <button onclick="insertEmojiFromModal('🌟')">🌟</button>
+            <button onclick="insertEmojiFromModal('💔')">💔</button>
+            <button onclick="insertEmojiFromModal('😴')">😴</button>
+            <button onclick="insertEmojiFromModal('🤩')">🤩</button>
+            <!-- 可以添加更多 -->
+        </div>
+    </div>
+
+    <script>
+        let currentImageDataURL = null;
+        let currentImageWidth = 200;
+        let currentAudioDataURL = null;
+
+        // 背景设置
+        function setBackground() {
+            const color = document.getElementById('bgColor').value;
+            document.body.style.backgroundColor = color;
+        }
+
+        function setBackgroundImage() {
+            const input = document.getElementById('bgImage');
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.body.style.backgroundImage = `url(${e.target.result})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 插入表情
+        function insertEmoji(emoji) {
+            const content = document.getElementById("diary-content");
+            content.focus();
+            document.execCommand('insertText', false, emoji);
+        }
+
+        function insertEmojiFromModal(emoji) {
+            insertEmoji(emoji);
+            closeEmojiModal();
+        }
+
+        function openEmojiModal() {
+            document.getElementById('emojiModal').classList.add('active');
+        }
+
+        function closeEmojiModal() {
+            document.getElementById('emojiModal').classList.remove('active');
+        }
+
+        // 处理图片选择
+        function handleImageSelect() {
+            const input = document.getElementById("imageInput");
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                currentImageDataURL = e.target.result;
+                currentImageWidth = 200;
+
+                // 更新工具栏
+                const toolbar = document.getElementById('image-toolbar');
+                toolbar.innerHTML = `
+              <img src="${currentImageDataURL}" style="width: 50px; height: auto; border-radius: 5px;">
+              <div class="image-control">
+                <label style="font-size: 12px; margin-right: 5px;">大小:</label>
+                <input type="range" min="50" max="500" value="${currentImageWidth}" id="imageSizeSlider" onchange="updateImageWidth(this.value)" style="margin-right: 5px;">
+                <span id="imageSizeDisplay">${currentImageWidth}px</span>
+              </div>
+              <button class="toolbar insert-btn" onclick="insertCurrentImage()">插入图片</button>
+              <button class="toolbar cancel-btn" onclick="cancelImageInsert()">取消</button>
+            `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateImageWidth(value) {
+            currentImageWidth = value;
+            document.getElementById('imageSizeDisplay').textContent = value + 'px';
+        }
+
+        function insertCurrentImage() {
+            if (!currentImageDataURL) return;
+
+            const imgHtml = `<div style="display: inline-block; margin: 10px 0;"><img src="${currentImageDataURL}" class="preview-img" style="width: ${currentImageWidth}px; height: auto;"></div>`;
+            insertHtmlAtCursor(imgHtml);
+
+            // 重置工具栏
+            resetImageToolbar();
+        }
+
+        function cancelImageInsert() {
+            currentImageDataURL = null;
+            resetImageToolbar();
+        }
+
+        function resetImageToolbar() {
+            const toolbar = document.getElementById('image-toolbar');
+            toolbar.innerHTML = `<input type="file" id="imageInput" class="file-input" accept="image/*" onchange="handleImageSelect()" />`;
+        }
+
+        // 处理音频选择
+        function handleAudioSelect() {
+            const input = document.getElementById("audioInput");
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                currentAudioDataURL = e.target.result;
+
+                // 更新工具栏
+                const toolbar = document.getElementById('audio-toolbar');
+                toolbar.innerHTML = `
+              <audio controls style="width: 150px;"><source src="${currentAudioDataURL}" type="${file.type}"></audio>
+              <button class="toolbar insert-btn" onclick="insertCurrentAudio()">插入音频</button>
+              <button class="toolbar cancel-btn" onclick="cancelAudioInsert()">取消</button>
+            `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function insertCurrentAudio() {
+            if (!currentAudioDataURL) return;
+
+            const audioHtml = `<div style="margin: 10px 0;"><audio controls class="preview-audio"><source src="${currentAudioDataURL}" type="audio/*"></audio></div>`;
+            insertHtmlAtCursor(audioHtml);
+
+            // 重置工具栏
+            resetAudioToolbar();
+        }
+
+        function cancelAudioInsert() {
+            currentAudioDataURL = null;
+            resetAudioToolbar();
+        }
+
+        function resetAudioToolbar() {
+            const toolbar = document.getElementById('audio-toolbar');
+            toolbar.innerHTML = `<input type="file" id="audioInput" class="file-input" accept="audio/*" onchange="handleAudioSelect()" />`;
+        }
+
+        // 通用插入HTML函数
+        function insertHtmlAtCursor(html) {
+            const content = document.getElementById("diary-content");
+            content.focus();
+            if (document.execCommand('insertHTML', false, html)) {
+                return;
+            }
+            // Fallback if execCommand fails
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                range.deleteContents();
+                range.insertNode(div);
+                range.collapse(false);
+            } else {
+                content.innerHTML += html;
+            }
+        }
+
+        // 涂鸦大小显示更新
+        function updateDoodleSizeDisplay(value) {
+            document.getElementById('doodleSizeDisplay').textContent = value + 'px';
+        }
+
+        // 改进涂鸦功能
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let undoStack = [];
+
+        function changeDoodleColor(color) {
+            ctx.strokeStyle = color;
+        }
+
+        function saveState() {
+            undoStack.push(canvas.toDataURL());
+            if (undoStack.length > 20) { // 限制栈大小
+                undoStack.shift();
+            }
+        }
+
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+
+        canvas.addEventListener("mousedown", (e) => {
+            drawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+            saveState();
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+            if (lastX !== 0 || lastY !== 0) {
+                saveState();
+            }
+        });
+
+        canvas.addEventListener("mouseout", () => drawing = false);
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (!drawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveState(); // 保存清空状态
+        }
+
+        function undoDoodle() {
+            if (undoStack.length > 0) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = undoStack.pop();
+            }
+        }
+
+        function insertDoodle() {
+            const dataURL = canvas.toDataURL();
+            const doodleSize = document.getElementById('doodleSize').value;
+            const doodleHtml = `<div style="display: inline-block; margin: 10px 0;"><img src="${dataURL}" class="preview-img" style="width: ${doodleSize}px; height: auto;"></div>`;
+            insertHtmlAtCursor(doodleHtml);
+            clearCanvas();
+        }
+
+        // 初始化时间
+        window.onload = () => {
+            const now = new Date('2025-10-22T00:00:00');
+            document.getElementById("year").value = now.getFullYear();
+            document.getElementById("month").value = now.getMonth() + 1;
+            document.getElementById("day").value = now.getDate();
+            document.getElementById("hour").value = now.getHours();
+            document.getElementById("minute").value = now.getMinutes();
+
+            // 加载记忆（localStorage）
+            loadMemory();
+        };
+
+        // 记忆功能：保存到localStorage
+        function saveMemory() {
+            const data = {
+                year: document.getElementById('year').value,
+                month: document.getElementById('month').value,
+                day: document.getElementById('day').value,
+                hour: document.getElementById('hour').value,
+                minute: document.getElementById('minute').value,
+                weather: document.getElementById('weather').value,
+                mood: document.getElementById('mood').value,
+                location: document.getElementById('location').value,
+                content: document.getElementById('diary-content').innerHTML
+            };
+            localStorage.setItem('diaryMemory', JSON.stringify(data));
+        }
+
+        function loadMemory() {
+            const saved = localStorage.getItem('diaryMemory');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('year').value = data.year || '';
+                document.getElementById('month').value = data.month || '';
+                document.getElementById('day').value = data.day || '';
+                document.getElementById('hour').value = data.hour || '';
+                document.getElementById('minute').value = data.minute || '';
+                document.getElementById('weather').value = data.weather || '';
+                document.getElementById('mood').value = data.mood || '';
+                document.getElementById('location').value = data.location || '';
+                document.getElementById('diary-content').innerHTML = data.content || '';
+            }
+        }
+
+        // HTML to MD converter - 输出带宽度的HTML img标签
+        function htmlToMarkdown(html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+
+            // 移除图像控制元素（虽然现在没有了）
+            const controls = tempDiv.querySelectorAll('.image-control');
+            controls.forEach(control => control.remove());
+
+            let md = '';
+            const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null, false);
+
+            let node;
+            let inParagraph = false;
+            while (node = walker.nextNode()) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const text = node.textContent.trim();
+                    if (text) {
+                        if (!inParagraph) {
+                            md += '\n';
+                            inParagraph = true;
+                        }
+                        md += text + ' ';
+                    }
+                } else if (node.tagName === 'IMG') {
+                    const width = node.style.width || '200px'; // 默认宽度
+                    md += `\n\n<img src="${node.src}" style="width: ${width}; height: auto;">\n\n`;
+                    inParagraph = false;
+                } else if (node.tagName === 'AUDIO') {
+                    md += '\n\n[音频文件]\n\n';
+                    inParagraph = false;
+                } else if (node.tagName === 'BR' || (node.tagName === 'DIV' && node.style.display === 'inline-block')) {
+                    if (inParagraph) {
+                        md += '\n';
+                        inParagraph = false;
+                    }
+                }
+            }
+            return md.trim().replace(/\n{3,}/g, '\n\n');
+        }
+
+        // 保存日记 - 只生成MD
+        function saveDiary() {
+            saveMemory(); // 保存记忆
+
+            const year = document.getElementById('year').value;
+            const month = String(document.getElementById('month').value).padStart(2, '0');
+            const day = String(document.getElementById('day').value).padStart(2, '0');
+            const hour = String(document.getElementById('hour').value).padStart(2, '0');
+            const minute = String(document.getElementById('minute').value).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day} ${hour}:${minute}`;
+
+            const weather = document.getElementById('weather').value;
+            const mood = document.getElementById('mood').value;
+            const location = document.getElementById('location').value;
+            const contentHtml = document.getElementById('diary-content').innerHTML;
+            const contentMd = htmlToMarkdown(contentHtml);
+
+            const mdText = `# 日记 ${dateStr}
+
+**天气:** ${weather}
+
+**心情:** ${mood}
+
+**地点:** ${location}
+
+## 事件与感想
+
+${contentMd}
+
+---
+
+*Generated by 多媒体日记*`;
+
+            const mdBlob = new Blob([mdText], { type: 'text/markdown;charset=utf-8' });
+            const mdLink = document.createElement('a');
+            mdLink.href = URL.createObjectURL(mdBlob);
+            mdLink.download = `diary_${year}${month}${day}.md`;
+            mdLink.click();
+
+            alert('日记已保存为 MD 文件！');
+        }
+
+        // Ctrl+S 快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveDiary();
+            }
+        });
+
+        // 实时保存记忆
+        document.querySelectorAll('input, select, #diary-content').forEach(el => {
+            el.addEventListener('input', saveMemory);
+        });
+    </script>
+</body>
+</html>

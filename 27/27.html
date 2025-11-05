@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的灵感日记</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      /* 新风格：柔和的米色背景，类似纸张 */
+      font-family: 'Noto Serif SC', serif;
+      background: #f9f6f2;
+      color: #3d3a37;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      /* 新风格：使用更柔和、更浅的阴影 */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #eee;
+    }
+
+    .header {
+      /* 新风格：温暖的赤陶色，更有手帐感 */
+      background: #c9aE9C;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.2em;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1em;
+    }
+
+    .content {
+      padding: 30px 40px;
+    }
+
+    /* 优化：不再使用生硬的卡片网格，改为更流畅的元信息栏 */
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      background: #fdfaf6;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid #eee;
+    }
+
+    .meta-item {
+      flex: 1 1 200px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #5a5652;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+    }
+
+    input[type="datetime-local"],
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      font-family: 'Noto Serif SC', serif;
+      background: white;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #a38b7f;
+      box-shadow: 0 0 0 3px rgba(163, 139, 127, 0.1);
+    }
+
+    /* 新增：元信息栏的小按钮 */
+    .meta-button {
+      padding: 6px 10px;
+      font-size: 0.85em;
+      border: 1px solid #c9aE9C;
+      color: #c9aE9C;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 8px;
+      transition: all 0.2s;
+    }
+    .meta-button:hover {
+      background: #c9aE9C;
+      color: white;
+    }
+    
+    .meta-input-group {
+      display: flex;
+      align-items: center;
+    }
+    .meta-input-group input, .meta-input-group select {
+      flex-grow: 1;
+    }
+    .meta-input-group .meta-button {
+      flex-shrink: 0;
+      margin-left: 8px;
+      padding: 12px;
+      line-height: 1;
+    }
+
+    #diary-content {
+      min-height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      background: #fafafa;
+      font-size: 1.05em;
+      line-height: 1.7;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    #diary-content:focus {
+      outline: none;
+      border-color: #a38b7f;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(163, 139, 127, 0.1);
+    }
+
+    /* 优化：工具栏不再是生硬的方框，而是更融合的区域 */
+    .toolbar {
+      padding: 20px 0;
+      margin-bottom: 25px;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+
+    .toolbar-section {
+      margin-bottom: 20px;
+    }
+    .toolbar-section:last-child { margin-bottom: 0; }
+
+    .toolbar-label {
+      font-weight: 600;
+      color: #5a5652;
+      margin-bottom: 12px;
+      display: block;
+    }
+    
+    .toolbar-inline-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-family: 'Noto Serif SC', serif;
+      transition: all 0.3s;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* 优化：表情按钮更柔和 */
+    .btn-emoji {
+      background: none;
+      font-size: 1.6em;
+      padding: 5px;
+      border-radius: 8px;
+    }
+    .btn-emoji:hover {
+      background: #f0ebe8;
+      transform: scale(1.1);
+    }
+
+    /* 新风格：主色调按钮 */
+    .btn-primary {
+      background: #799c8a; /* 柔和的绿色 */
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 10px rgba(121, 156, 138, 0.2);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(121, 156, 138, 0.3);
+    }
+
+    /* 新风格：次要按钮 */
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #555;
+      border: 1px solid #ddd;
+    }
+    .btn-secondary:hover {
+      background: #e9e9e9;
+      border-color: #ccc;
+    }
+    
+    /* 新风格：工具按钮（画笔、橡皮） */
+    .btn-tool {
+      background: #f5f5f5;
+      color: #555;
+      border: 1px solid #ddd;
+      padding: 8px 15px;
+    }
+    .btn-tool.active {
+      background: #799c8a;
+      color: white;
+      border-color: #799c8a;
+      box-shadow: 0 2px 5px rgba(121, 156, 138, 0.2);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .file-input-wrapper input[type="file"] { display: none; }
+    .file-input-wrapper .btn { margin: 0; }
+
+    #canvas {
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      cursor: crosshair;
+      display: block;
+      margin: 15px 0;
+      background: white;
+    }
+
+    .canvas-tools {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0;
+    }
+    
+    .brush-size {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brush-size input[type="range"] { width: 120px; }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    /* 优化：日记列表条目新风格 */
+    .diary-list {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+    }
+
+    .diary-item {
+      background: #fdfaf6;
+      padding: 20px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      transition: box-shadow 0.3s;
+    }
+    .diary-item:hover {
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .diary-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .diary-item-meta {
+      font-size: 0.9em;
+      color: #666;
+      font-family: Arial, sans-serif; /* 元数据用非衬线体更清晰 */
+    }
+    .diary-item-content {
+      line-height: 1.7;
+      color: #333;
+      overflow-wrap: break-word;
+    }
+    .diary-item-content img, .diary-item-content audio {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    
+    /* 媒体预览样式 */
+    .preview-img {
+      max-width: 80%; /* 不撑满，更美观 */
+      border-radius: 8px;
+      margin: 10px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 1px solid #eee;
+    }
+    .preview-audio {
+      width: 100%;
+      max-width: 400px;
+      margin: 10px 0;
+    }
+
+    /* 辅助功能 */
+    .save-status {
+      text-align: center;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+    .save-status.success {
+      background: #e6f3eC;
+      color: #4a7c59;
+      display: block;
+    }
+    
+    .help-text {
+      font-size: 0.85em;
+      color: #888;
+      margin-top: 5px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📔 我的灵感日记</h1>
+      <p>记录生活的温度与色彩</p>
+    </div>
+
+    <div class="content">
+      
+      <div class="meta-bar">
+        <div class="meta-item">
+          <label>📅 时间</label>
+          <div class="meta-input-group">
+            <input type="datetime-local" id="time">
+            <button class="meta-button" id="useCurrentTimeBtn" title="使用当前时间">🕒</button>
+          </div>
+        </div>
+
+        <div class="meta-item">
+          <label>📍 地点</label>
+          <div class="meta-input-group">
+            <input type="text" id="location" placeholder="请输入地点">
+            <button class="meta-button" id="getLocationBtn" title="获取当前位置">🌍</button>
+          </div>
+          <p class="help-text">提示: 获取位置后，可 <a id="windyLink" href="https://www.https://openweathermap.org" target="_blank">查看openweathermap.org天气</a></p>
+        </div>
+
+        <div class="meta-item">
+          <label>🌤️ 天气 (自动)</label>
+          <div class="meta-input-group">
+            <select id="weather">
+              <option>☀️ 晴天</option>
+              <option>⛅ 多云</option>
+              <option>🌧️ 雨天</option>
+              <option>🌨️ 雪天</option>
+              <option>🌫️ 雾天</option>
+              <option>⛈️ 雷雨</option>
+            </select>
+            <button class="meta-button" id="getWeatherBtn" title="根据位置自动获取">🛰️</button>
+          </div>
+        </div>
+        
+        <div class="meta-item">
+          <label>😊 心情</label>
+          <select id="mood">
+            <option>😊 开心</option>
+            <option>😔 难过</option>
+            <option>😠 生气</option>
+            <option>😌 平静</option>
+            <option>😍 兴奋</option>
+            <option>😴 疲惫</option>
+            <option>🤔 思考</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>✍️ 今天发生了什么...</label>
+        <div id="diary-content" contenteditable="true" placeholder="写下你的故事..."></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-section">
+          <span class="toolbar-label">😀 表情符号</span>
+          <div class="toolbar-inline-group">
+            <button class="btn btn-emoji" onclick="insertEmoji('😊')">😊</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('😢')">😢</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('❤️')">❤️</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('👍')">👍</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('🎉')">🎉</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('🌟')">🌟</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('☕')">☕</button>
+            <button class="btn btn-emoji" onclick="insertEmoji('🎵')">🎵</button>
+          </div>
+        </div>
+
+        <div class="toolbar-section">
+          <span class="toolbar-label">📎 附件</span>
+          <div class="toolbar-inline-group">
+            <div class="file-input-wrapper">
+              <label for="imageInput" class="btn btn-secondary">📷 插入图片</label>
+              <input type="file" id="imageInput" accept="image/*" onchange="insertImage()" />
+            </div>
+            <div class="file-input-wrapper">
+              <label for="audioInput" class="btn btn-secondary">🎤 插入语音</label>
+              <input type="file" id="audioInput" accept="audio/*" onchange="insertAudio()" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🎨 灵感画板</label>
+        <div class="canvas-tools">
+          <button class="btn btn-tool active" id="penToolBtn">✏️ 画笔</button>
+          <button class="btn btn-tool" id="eraserToolBtn">🧼 橡皮</button>
+          
+          <input type="color" id="colorPicker" class="color-picker" value="#000000">
+          
+          <div class="brush-size">
+            <span>粗细:</span>
+            <input type="range" id="brushSize" min="1" max="20" value="2">
+            <span id="brushSizeValue">2</span>
+          </div>
+          <button class="btn btn-secondary" onclick="clearCanvas()">🗑️ 清空</button>
+          <button class="btn btn-primary" onclick="insertDoodle()">✅ 插入画板</button>
+        </div>
+        <canvas id="canvas" width="800" height="300"></canvas>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="saveDiary()" style="font-size: 1.1em; padding: 15px 40px;">💾 保存日记</button>
+        <button class="btn btn-secondary" onclick="clearForm()">🔄 清空重写</button>
+        <button class="btn btn-secondary" onclick="exportDiary()">📤 导出日记 (JSON)</button>
+      </div>
+
+      <div class="save-status" id="saveStatus"></div>
+
+      <div class="diary-list" id="diaryList"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentCoords = null; // 用于存储经纬度
+    const OWM_API_KEY = "a5f12f5f57ba2db66cd4c6dfd4c6dbeb";
+    // --- 涂鸦板增强 ---
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let isErasing = false; // 新增：橡皮擦状态
+    const penToolBtn = document.getElementById("penToolBtn");
+    const eraserToolBtn = document.getElementById("eraserToolBtn");
+    
+    // 初始化
+    window.onload = () => {
+      setCurrentTime();
+      loadDiaries();
+      
+      // 画笔大小显示
+      const brushSizeSlider = document.getElementById("brushSize");
+      const brushSizeValue = document.getElementById("brushSizeValue");
+      brushSizeSlider.addEventListener("input", (e) => {
+        brushSizeValue.textContent = e.target.value;
+      });
+
+      // 新增：设置当前时间按钮
+      document.getElementById("useCurrentTimeBtn").onclick = setCurrentTime;
+      
+      // 新增：获取位置按钮
+      document.getElementById("getLocationBtn").onclick = getCurrentLocation;
+      
+      // 新增：获取天气按钮 (API占位)
+      document.getElementById("getWeatherBtn").onclick = fetchWeather;
+      
+      // 新增：画笔工具切换
+      penToolBtn.onclick = () => {
+        isErasing = false;
+        penToolBtn.classList.add("active");
+        eraserToolBtn.classList.remove("active");
+        canvas.style.cursor = 'crosshair';
+      };
+      eraserToolBtn.onclick = () => {
+        isErasing = true;
+        penToolBtn.classList.remove("active");
+        eraserToolBtn.classList.add("active");
+        canvas.style.cursor = 'cell'; // 橡皮擦光标
+      };
+      
+      // 调整Canvas大小以适应容器
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+    };
+    
+    function resizeCanvas() {
+        const contentWidth = canvas.parentElement.clientWidth;
+        canvas.width = contentWidth - 2; // 减去边框
+        canvas.height = 300; // 固定高度
+    }
+
+    function setCurrentTime() {
+      const now = new Date();
+      // 修复时区问题
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById("time").value = now.toISOString().slice(0, 16);
+    }
+    
+    // --- 新增：地理位置功能 ---
+    // 这个新版本会获取经纬度，然后调用 OpenWeatherMap API 将其转换为城市名
+    function getCurrentLocation() {
+      const locInput = document.getElementById("location");
+      const windyLink = document.getElementById("windyLink");
+      
+      if (!navigator.geolocation) {
+        locInput.value = "浏览器不支持地理位置";
+        return;
+      }
+
+      locInput.value = "正在获取位置...";
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          currentCoords = { lat, lon }; // 存储坐标以供 fetchWeather 使用
+          
+          // 更新Windy.com链接 (这个链接不需要API Key，仍然可用)
+          windyLink.href = `https://www.windy.com/?${lat},${lon},10`;
+          
+          // --- 新功能：使用 OWM 反向地理编码 API ---
+          fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${OWM_API_KEY}`)
+            .then(res => {
+                if (!res.ok) throw new Error(`Geocoding HTTP 错误! 状态: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+              if (data && data.length > 0) {
+                // 成功获取城市名
+                const city = data[0].name;
+                const country = data[0].country;
+                locInput.value = `${city}, ${country}`;
+                console.log("城市识别成功:", data[0]);
+              } else {
+                locInput.value = `纬度: ${lat.toFixed(4)}, 经度: ${lon.toFixed(4)}`;
+              }
+            })
+            .catch(err => {
+              console.error("反向地理编码API请求失败:", err);
+              alert(`获取城市名称失败。\n请检查API Key是否正确并已激活。\n错误: ${err.message}`);
+              locInput.value = "获取城市失败";
+            });
+        },
+        () => {
+          locInput.value = "获取位置失败";
+        }
+      );
+    }
+    
+    // --- 新增：天气API占位 ---
+    // --- 重写以适配 Windy.com API ---
+    function fetchWeather() {
+        if (!currentCoords) {
+            alert("请先获取地理位置！");
+            return;
+        }
+        
+        const lat = currentCoords.lat;
+        const lon = currentCoords.lon;
+        const weatherSelect = document.getElementById("weather");
+        const originalValue = weatherSelect.value;
+        
+        // 临时显示加载状态
+        if (!document.getElementById("loading-weather")) {
+            weatherSelect.innerHTML += '<option id="loading-weather" value="loading">正在获取天气...</option>';
+        }
+        weatherSelect.value = "loading";
+
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OWM_API_KEY}&units=metric&lang=zh_cn`)
+          .then(res => {
+              if (!res.ok) {
+                  throw new Error(`Weather HTTP 错误! 状态: ${res.status}`);
+              }
+              return res.json();
+          })
+          .then(data => {
+            console.log("OWM 天气 API 返回数据:", data);
+            
+            if (data.weather && data.weather.length > 0) {
+                const weatherDesc = data.weather[0].description; // "小雨", "多云", "晴"
+                console.log("获取到天气描述:", weatherDesc); 
+                
+                const emojiValue = mapWeatherToEmoji(weatherDesc);
+                weatherSelect.value = emojiValue;
+            } else {
+                console.error("天气数据格式不正确:", data);
+                weatherSelect.value = originalValue; // 恢复原值
+            }
+          })
+          .catch(err => {
+              console.error("天气API请求失败:", err);
+              alert(`获取天气失败。\n请检查API Key是否正确并已激活。\n错误: ${err.message}`);
+              weatherSelect.value = originalValue; // 恢复原值
+          })
+          .finally(() => {
+              // 无论成功与否，都移除加载选项
+              const loadingOption = document.getElementById("loading-weather");
+              if (loadingOption) {
+                  loadingOption.remove();
+              }
+          });
+    }
+
+    // --- 新增的天气映射函数 (Windy.com 版) ---
+    // (请将此函数添加到 <script> 标签内)
+    function mapWeatherToEmoji(description) {
+        const desc = description.toLowerCase();
+        console.log(`正在匹配描述: ${desc}`);
+
+        // 这里的返回值必须与你 <select id="weather"> 
+        // 中的 <option> 文本完全一致。
+        
+        if (desc.includes('雷') || desc.includes('暴')) {
+            return '⛈️ 雷雨';
+        }
+        if (desc.includes('雪')) {
+            return '🌨️ 雪天';
+        }
+        if (desc.includes('雨')) {
+            return '🌧️ 雨天';
+        }
+        if (desc.includes('雾') || desc.includes('霾') || desc.includes('薄雾')) {
+            return '🌫️ 雾天';
+        }
+        if (desc.includes('云')) {
+            return '⛅ 多云';
+        }
+        if (desc.includes('晴')) {
+            return '☀️ 晴天';
+        }
+        
+        // 如果没有匹配到，默认返回第一个选项
+        console.warn(`未找到匹配的天气描述: ${desc}，返回默认值。`);
+        return '☀️ 晴天'; 
+    }
+
+    // 表情插入
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      content.focus();
+      document.execCommand('insertHTML', false, emoji);
+    }
+
+    // 图片插入
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.focus();
+        // 插入图片并换行
+        document.execCommand('insertHTML', false, `<br><img src="${e.target.result}" class="preview-img"><br>`);
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    // 语音插入
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        content.focus();
+        document.execCommand('insertHTML', false, `<br><audio controls class="preview-audio"><source src="${e.target.result}" type="${file.type}"></audio><br>`);
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    }
+
+    // --- 涂鸦功能 (已更新支持橡皮擦) ---
+    canvas.addEventListener("mousedown", (e) => {
+      drawing = true;
+      draw(e);
+    });
+    canvas.addEventListener("mouseup", () => {
+      drawing = false;
+      ctx.beginPath(); // 停止画线
+    });
+    canvas.addEventListener("mouseout", () => drawing = false);
+    canvas.addEventListener("mousemove", draw);
+
+    // 触摸支持
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      drawing = true;
+      const touch = e.touches[0];
+      draw(getTouchPos(touch));
+    });
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      if (!drawing) return;
+      const touch = e.touches[0];
+      draw(getTouchPos(touch));
+    });
+    canvas.addEventListener("touchend", () => {
+        drawing = false;
+        ctx.beginPath();
+    });
+    
+    function getTouchPos(touch) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            offsetX: touch.clientX - rect.left,
+            offsetY: touch.clientY - rect.top
+        };
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      const color = document.getElementById("colorPicker").value;
+      const size = document.getElementById("brushSize").value;
+      
+      // 检查是画笔还是橡皮
+      if (isErasing) {
+        ctx.globalCompositeOperation = 'destination-out'; // 橡皮擦模式
+        ctx.lineWidth = size * 2; // 橡皮擦可以粗一点
+        ctx.strokeStyle = "rgba(0,0,0,1)"; // 颜色不重要，但必须设置
+      } else {
+        ctx.globalCompositeOperation = 'source-over'; // 正常绘画模式
+        ctx.lineWidth = size;
+        ctx.strokeStyle = color;
+      }
+      
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL(); // 获取PNG格式
+      content.focus();
+      document.execCommand('insertHTML', false, `<br><img src="${dataURL}" class="preview-img" alt="涂鸦"><br>`);
+      clearCanvas();
+    }
+
+    // 保存日记
+    function saveDiary() {
+      const diary = {
+        id: Date.now(),
+        time: document.getElementById("time").value,
+        weather: document.getElementById("weather").value,
+        mood: document.getElementById("mood").value,
+        location: document.getElementById("location").value,
+        // 修复：保存innerHTML以保留富文本
+        content: document.getElementById("diary-content").innerHTML 
+      };
+
+      const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+      diaries.unshift(diary); // 新日记放在最前面
+      localStorage.setItem('diaries', JSON.stringify(diaries));
+
+      showSaveStatus('✅ 日记保存成功！');
+      loadDiaries();
+      // 可选：保存后清空表单
+      // clearForm(false); // 传入false避免二次确认
+    }
+
+    // 加载日记列表
+    function loadDiaries() {
+      const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+      const listDiv = document.getElementById("diaryList");
+      
+      if (diaries.length === 0) {
+        listDiv.innerHTML = '<p style="text-align:center; color:#888;">还没有历史日记哦。</p>';
+        return;
+      }
+
+      listDiv.innerHTML = '<h2 style="margin-bottom: 20px; color: #333; font-weight: 600;">📚 历史日记</h2>';
+      
+      diaries.forEach(diary => {
+        const date = new Date(diary.time);
+        const dateStr = date.toLocaleString('zh-CN', { dateStyle: 'medium', timeStyle: 'short' });
+        
+        const item = document.createElement('div');
+        item.className = 'diary-item';
+        item.innerHTML = `
+          <div class="diary-item-header">
+            <div class="diary-item-meta">
+              📅 ${dateStr} | ${diary.weather} | ${diary.mood} | 📍 ${diary.location}
+            </div>
+            <button class="btn btn-secondary" style="padding: 5px 15px; margin: 0;" onclick="deleteDiary(${diary.id})">🗑️ 删除</button>
+          </div>
+          <div class="diary-item-content">${diary.content}</div>
+        `;
+        listDiv.appendChild(item);
+      });
+    }
+
+    // 删除日记
+    function deleteDiary(id) {
+      if (!confirm('确定要删除这篇日记吗？')) return;
+      
+      const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+      const filtered = diaries.filter(d => d.id !== id);
+      localStorage.setItem('diaries', JSON.stringify(filtered));
+      loadDiaries();
+    }
+
+    // 清空表单
+    function clearForm(confirmFirst = true) {
+      if (confirmFirst && !confirm('确定要清空当前所有内容吗？')) return;
+      
+      document.getElementById("diary-content").innerHTML = '';
+      document.getElementById("location").value = '';
+      clearCanvas();
+      setCurrentTime(); // 重置为当前时间
+      // 重置下拉菜单
+      document.getElementById("weather").selectedIndex = 0;
+      document.getElementById("mood").selectedIndex = 0;
+      currentCoords = null; // 清除坐标
+    }
+
+    // --- 优化：导出日记功能 ---
+    function exportDiary() {
+      const diaryData = {
+        // 新增：元数据
+        exportInfo: {
+          appName: "我的灵感手帐",
+          version: "2.0",
+          exportedAt: new Date().toISOString()
+        },
+        // 核心日记数据
+        diary: {
+          id: `export_${Date.now()}`,
+          time: document.getElementById("time").value,
+          weather: document.getElementById("weather").value,
+          mood: document.getElementById("mood").value,
+          location: document.getElementById("location").value,
+          // 修复：导出innerHTML以保留所有媒体
+          contentHTML: document.getElementById("diary-content").innerHTML,
+          // 新增：同时导出一份纯文本
+          contentText: document.getElementById("diary-content").innerText
+        }
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(diaryData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `diary_${new Date(diaryData.diary.time).toISOString().slice(0,10)}.json`);
+      downloadAnchor.click();
+    }
+
+    // 显示保存状态
+    function showSaveStatus(message) {
+      const status = document.getElementById('saveStatus');
+      status.className = 'save-status success';
+      status.textContent = message;
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

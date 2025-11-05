@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的多媒体日记</title>
+  <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #6b8cbc;
+      --accent-color: #ff7e5f;
+      --light-color: #f7f9fc;
+      --dark-color: #2c3e50;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+      --border-radius: 8px;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--primary-color);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .diary-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      background: #f0f4f8;
+      border-bottom: 1px solid #e1e8ed;
+    }
+
+    .info-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-group label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--dark-color);
+    }
+
+    .info-group input, 
+    .info-group select {
+      padding: 10px;
+      border: 1px solid #d1d9e0;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .info-group input:focus, 
+    .info-group select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+    }
+
+    .diary-editor {
+      padding: 20px;
+    }
+
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: var(--border-radius);
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding-right: 10px;
+      border-right: 1px solid #e1e8ed;
+    }
+
+    .tool-group:last-child {
+      border-right: none;
+    }
+
+    .tool-btn {
+      background: white;
+      border: 1px solid #d1d9e0;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: var(--transition);
+    }
+
+    .tool-btn:hover {
+      background: #f0f4f8;
+    }
+
+    .tool-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .emoji-picker {
+      position: relative;
+    }
+
+    .emoji-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: white;
+      border: 1px solid #d1d9e0;
+      border-radius: var(--border-radius);
+      padding: 10px;
+      display: none;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      z-index: 10;
+      box-shadow: var(--shadow);
+      max-width: 200px;
+    }
+
+    .emoji-list.show {
+      display: grid;
+    }
+
+    .emoji-option {
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px;
+      text-align: center;
+      border-radius: 4px;
+      transition: var(--transition);
+    }
+
+    .emoji-option:hover {
+      background: #f0f4f8;
+    }
+
+    #diary-content {
+      min-height: 300px;
+      border: 1px solid #d1d9e0;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      margin-bottom: 20px;
+      background: white;
+      line-height: 1.8;
+    }
+
+    .media-tools {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .media-tools {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .doodle-section, .media-section {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: var(--border-radius);
+    }
+
+    .doodle-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-option {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .color-option.active {
+      border-color: var(--dark-color);
+    }
+
+    #canvas {
+      border: 1px solid #d1d9e0;
+      border-radius: var(--border-radius);
+      background: white;
+      display: block;
+      margin: 0 auto;
+      cursor: crosshair;
+    }
+
+    .media-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--secondary-color);
+    }
+
+    .btn-success {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #27ae60;
+    }
+
+    .btn-warning {
+      background: var(--warning-color);
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background: #e67e22;
+    }
+
+    .btn-danger {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      padding: 20px;
+      border-top: 1px solid #e1e8ed;
+      background: #f0f4f8;
+    }
+
+    .media-preview {
+      margin-top: 15px;
+    }
+
+    .preview-item {
+      position: relative;
+      display: inline-block;
+      margin: 5px;
+    }
+
+    .preview-item img, .preview-item audio {
+      max-width: 150px;
+      border-radius: 4px;
+    }
+
+    .remove-media {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .diary-list {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+      background: #f8f9fa;
+      border-top: 1px solid #e1e8ed;
+    }
+
+    .diary-list.show {
+      max-height: 300px;
+      padding: 15px;
+    }
+
+    .diary-list h3 {
+      margin-bottom: 10px;
+      color: var(--dark-color);
+    }
+
+    #saved-diaries {
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #saved-diaries li {
+      padding: 10px;
+      border-bottom: 1px solid #e1e8ed;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #saved-diaries li:hover {
+      background: #e8f4fd;
+    }
+
+    .toggle-list {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      border-radius: var(--border-radius);
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .search-box {
+      margin-bottom: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d9e0;
+      border-radius: var(--border-radius);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>我的多媒体日记</h1>
+      <p class="subtitle">记录生活中的每一个精彩瞬间</p>
+      <button class="toggle-list" id="toggleDiaryList">日记列表</button>
+    </header>
+
+    <div class="diary-list" id="diaryList">
+      <h3>已保存的日记</h3>
+      <div class="search-box">
+        <input type="text" id="searchDiary" placeholder="搜索日记...">
+      </div>
+      <ul id="saved-diaries">
+        <!-- 日记列表将通过JavaScript动态生成 -->
+      </ul>
+    </div>
+
+    <div class="diary-info">
+      <div class="info-group">
+        <label for="time">时间:</label>
+        <input type="datetime-local" id="time">
+      </div>
+
+      <div class="info-group">
+        <label for="weather">天气:</label>
+        <select id="weather">
+          <option value="☀️">☀️ 晴</option>
+          <option value="⛅">⛅ 多云</option>
+          <option value="🌧️">🌧️ 雨</option>
+          <option value="🌨️">🌨️ 雪</option>
+          <option value="🌪️">🌪️ 风</option>
+          <option value="🌫️">🌫️ 雾</option>
+        </select>
+      </div>
+
+      <div class="info-group">
+        <label for="mood">心情:</label>
+        <select id="mood">
+          <option value="😊">😊 开心</option>
+          <option value="😔">😔 难过</option>
+          <option value="😠">😠 生气</option>
+          <option value="😌">😌 平静</option>
+          <option value="😍">😍 兴奋</option>
+          <option value="😴">😴 疲惫</option>
+        </select>
+      </div>
+
+      <div class="info-group">
+        <label for="location">地点:</label>
+        <input type="text" id="location" placeholder="请输入地点">
+        <button class="btn" id="getLocation" style="margin-top:5px; padding:5px; font-size:0.8rem;">获取当前位置</button>
+      </div>
+    </div>
+
+    <div class="diary-editor">
+      <div class="editor-toolbar">
+        <div class="tool-group">
+          <button class="tool-btn" onclick="formatText('bold')"><b>B</b></button>
+          <button class="tool-btn" onclick="formatText('italic')"><i>I</i></button>
+          <button class="tool-btn" onclick="formatText('underline')"><u>U</u></button>
+        </div>
+        
+        <div class="tool-group">
+          <button class="tool-btn" onclick="formatText('insertUnorderedList')">• 列表</button>
+          <button class="tool-btn" onclick="formatText('insertOrderedList')">1. 列表</button>
+        </div>
+        
+        <div class="tool-group">
+          <select id="fontSize" onchange="formatText('fontSize', this.value)">
+            <option value="">字体大小</option>
+            <option value="1">小</option>
+            <option value="3">中</option>
+            <option value="5">大</option>
+            <option value="7">特大</option>
+          </select>
+          
+          <select id="fontFamily" onchange="formatText('fontName', this.value)">
+            <option value="">字体</option>
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+        </div>
+        
+        <div class="tool-group emoji-picker">
+          <button class="tool-btn" id="emojiBtn">😀 表情</button>
+          <div class="emoji-list" id="emojiList">
+            <span class="emoji-option">😀</span>
+            <span class="emoji-option">😃</span>
+            <span class="emoji-option">😄</span>
+            <span class="emoji-option">😁</span>
+            <span class="emoji-option">😆</span>
+            <span class="emoji-option">😅</span>
+            <span class="emoji-option">😂</span>
+            <span class="emoji-option">🤣</span>
+            <span class="emoji-option">😊</span>
+            <span class="emoji-option">😇</span>
+            <span class="emoji-option">🙂</span>
+            <span class="emoji-option">🙃</span>
+            <span class="emoji-option">😉</span>
+            <span class="emoji-option">😌</span>
+            <span class="emoji-option">😍</span>
+            <span class="emoji-option">🥰</span>
+            <span class="emoji-option">😘</span>
+            <span class="emoji-option">😗</span>
+            <span class="emoji-option">😙</span>
+            <span class="emoji-option">😚</span>
+            <span class="emoji-option">😋</span>
+            <span class="emoji-option">😛</span>
+            <span class="emoji-option">😝</span>
+            <span class="emoji-option">😜</span>
+            <span class="emoji-option">🤪</span>
+            <span class="emoji-option">🤨</span>
+            <span class="emoji-option">🧐</span>
+            <span class="emoji-option">🤓</span>
+            <span class="emoji-option">😎</span>
+            <span class="emoji-option">🤩</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="diary-content" contenteditable="true"></div>
+
+      <div class="media-tools">
+        <div class="doodle-section">
+          <h3>涂鸦板</h3>
+          <div class="doodle-controls">
+            <div class="color-option active" style="background-color: #000000;" data-color="#000000"></div>
+            <div class="color-option" style="background-color: #ff0000;" data-color="#ff0000"></div>
+            <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+            <div class="color-option" style="background-color: #008000;" data-color="#008000"></div>
+            <div class="color-option" style="background-color: #ffff00;" data-color="#ffff00"></div>
+            <div class="color-option" style="background-color: #ffa500;" data-color="#ffa500"></div>
+            <select id="brushSize">
+              <option value="2">细笔</option>
+              <option value="5" selected>中笔</option>
+              <option value="10">粗笔</option>
+            </select>
+            <button class="btn btn-warning" onclick="clearCanvas()">清除</button>
+          </div>
+          <canvas id="canvas" width="300" height="200"></canvas>
+          <div class="media-buttons">
+            <button class="btn btn-primary" onclick="insertDoodle()">插入涂鸦</button>
+          </div>
+        </div>
+
+        <div class="media-section">
+          <h3>媒体插入</h3>
+          <div class="media-buttons">
+            <label for="imageInput" class="btn btn-primary">
+              插入图片
+              <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="insertImage()">
+            </label>
+            <label for="audioInput" class="btn btn-primary">
+              插入音频
+              <input type="file" id="audioInput" accept="audio/*" style="display:none" onchange="insertAudio()">
+            </label>
+            <label for="videoInput" class="btn btn-primary">
+              插入视频
+              <input type="file" id="videoInput" accept="video/*" style="display:none" onchange="insertVideo()">
+            </label>
+          </div>
+          <div class="media-preview" id="mediaPreview">
+            <!-- 媒体预览将在这里显示 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-success" onclick="saveDiary()">保存日记</button>
+      <button class="btn btn-warning" onclick="clearDiary()">清空内容</button>
+      <button class="btn btn-danger" onclick="deleteDiary()">删除日记</button>
+    </div>
+  </div>
+
+  <script>
+    // 初始化时间和设置
+    window.onload = () => {
+      const now = new Date();
+      const local = now.toISOString().slice(0,16);
+      document.getElementById("time").value = local;
+      
+      // 加载已保存的日记列表
+      loadDiaryList();
+    };
+
+    // 富文本编辑功能
+    function formatText(command, value = null) {
+      document.execCommand(command, false, value);
+      document.getElementById("diary-content").focus();
+    }
+
+    // 表情选择器
+    document.getElementById("emojiBtn").addEventListener("click", function() {
+      const emojiList = document.getElementById("emojiList");
+      emojiList.classList.toggle("show");
+    });
+
+    document.querySelectorAll(".emoji-option").forEach(emoji => {
+      emoji.addEventListener("click", function() {
+        insertEmoji(this.textContent);
+        document.getElementById("emojiList").classList.remove("show");
+      });
+    });
+
+    function insertEmoji(emoji) {
+      const content = document.getElementById("diary-content");
+      const selection = window.getSelection();
+      
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const textNode = document.createTextNode(emoji);
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        content.innerHTML += emoji;
+      }
+      
+      content.focus();
+    }
+
+    // 涂鸦功能增强
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let currentColor = "#000000";
+    let brushSize = 5;
+
+    // 设置画笔颜色
+    document.querySelectorAll(".color-option").forEach(option => {
+      option.addEventListener("click", function() {
+        document.querySelectorAll(".color-option").forEach(opt => opt.classList.remove("active"));
+        this.classList.add("active");
+        currentColor = this.getAttribute("data-color");
+      });
+    });
+
+    // 设置画笔大小
+    document.getElementById("brushSize").addEventListener("change", function() {
+      brushSize = parseInt(this.value);
+    });
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    canvas.addEventListener("mousemove", draw);
+
+    function startDrawing(e) {
+      drawing = true;
+      draw(e);
+    }
+
+    function stopDrawing() {
+      drawing = false;
+      ctx.beginPath();
+    }
+
+    function draw(e) {
+      if (!drawing) return;
+      
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = currentColor;
+      
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function insertDoodle() {
+      const content = document.getElementById("diary-content");
+      const dataURL = canvas.toDataURL();
+      
+      const img = document.createElement("img");
+      img.src = dataURL;
+      img.className = "preview-img";
+      img.style.maxWidth = "200px";
+      
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "remove-media";
+      removeBtn.innerHTML = "×";
+      removeBtn.onclick = function() {
+        this.parentElement.remove();
+      };
+      
+      const container = document.createElement("div");
+      container.className = "preview-item";
+      container.appendChild(img);
+      container.appendChild(removeBtn);
+      
+      content.appendChild(container);
+      clearCanvas();
+    }
+
+    // 媒体插入功能
+    function insertImage() {
+      const input = document.getElementById("imageInput");
+      const file = input.files[0];
+      
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.className = "preview-img";
+        img.style.maxWidth = "200px";
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-media";
+        removeBtn.innerHTML = "×";
+        removeBtn.onclick = function() {
+          this.parentElement.remove();
+        };
+        
+        const container = document.createElement("div");
+        container.className = "preview-item";
+        container.appendChild(img);
+        container.appendChild(removeBtn);
+        
+        content.appendChild(container);
+        input.value = ""; // 清空输入框
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertAudio() {
+      const input = document.getElementById("audioInput");
+      const file = input.files[0];
+      
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.className = "preview-audio";
+        
+        const source = document.createElement("source");
+        source.src = e.target.result;
+        source.type = file.type;
+        audio.appendChild(source);
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-media";
+        removeBtn.innerHTML = "×";
+        removeBtn.onclick = function() {
+          this.parentElement.remove();
+        };
+        
+        const container = document.createElement("div");
+        container.className = "preview-item";
+        container.appendChild(audio);
+        container.appendChild(removeBtn);
+        
+        content.appendChild(container);
+        input.value = ""; // 清空输入框
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function insertVideo() {
+      const input = document.getElementById("videoInput");
+      const file = input.files[0];
+      
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = document.getElementById("diary-content");
+        
+        const video = document.createElement("video");
+        video.controls = true;
+        video.style.maxWidth = "200px";
+        
+        const source = document.createElement("source");
+        source.src = e.target.result;
+        source.type = file.type;
+        video.appendChild(source);
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "remove-media";
+        removeBtn.innerHTML = "×";
+        removeBtn.onclick = function() {
+          this.parentElement.remove();
+        };
+        
+        const container = document.createElement("div");
+        container.className = "preview-item";
+        container.appendChild(video);
+        container.appendChild(removeBtn);
+        
+        content.appendChild(container);
+        input.value = ""; // 清空输入框
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 地理位置功能
+    document.getElementById("getLocation").addEventListener("click", function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // 使用逆地理编码获取地址（这里使用Nominatim作为示例）
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+              .then(response => response.json())
+              .then(data => {
+                const address = data.display_name || "未知位置";
+                document.getElementById("location").value = address;
+              })
+              .catch(error => {
+                console.error("获取位置信息失败:", error);
+                document.getElementById("location").value = `纬度: ${lat.toFixed(4)}, 经度: ${lng.toFixed(4)}`;
+              });
+          },
+          function(error) {
+            alert("无法获取您的位置信息: " + error.message);
+          }
+        );
+      } else {
+        alert("您的浏览器不支持地理位置功能");
+      }
+    });
+
+    // 日记管理功能
+    function saveDiary() {
+      const time = document.getElementById("time").value;
+      const weather = document.getElementById("weather").value;
+      const mood = document.getElementById("mood").value;
+      const location = document.getElementById("location").value;
+      const content = document.getElementById("diary-content").innerHTML;
+      
+      if (!time || !content.trim()) {
+        alert("请填写时间和日记内容");
+        return;
+      }
+      
+      const diary = {
+        id: Date.now().toString(),
+        time,
+        weather,
+        mood,
+        location,
+        content,
+        created: new Date().toISOString()
+      };
+      
+      // 获取已保存的日记
+      let diaries = JSON.parse(localStorage.getItem("multimedia-diaries") || "[]");
+      
+      // 检查是否已存在相同时间的日记
+      const existingIndex = diaries.findIndex(d => d.id === diary.id);
+      if (existingIndex !== -1) {
+        diaries[existingIndex] = diary;
+      } else {
+        diaries.push(diary);
+      }
+      
+      // 保存到本地存储
+      localStorage.setItem("multimedia-diaries", JSON.stringify(diaries));
+      
+      alert("日记保存成功！");
+      loadDiaryList();
+    }
+
+    function loadDiaryList() {
+      const diaries = JSON.parse(localStorage.getItem("multimedia-diaries") || "[]");
+      const diaryList = document.getElementById("saved-diaries");
+      
+      diaryList.innerHTML = "";
+      
+      diaries.sort((a, b) => new Date(b.time) - new Date(a.time)).forEach(diary => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span>${new Date(diary.time).toLocaleString()} - ${diary.weather} ${diary.mood}</span>
+          <span>${diary.location || "未设置地点"}</span>
+        `;
+        
+        li.addEventListener("click", function() {
+          loadDiary(diary.id);
+        });
+        
+        diaryList.appendChild(li);
+      });
+    }
+
+    function loadDiary(id) {
+      const diaries = JSON.parse(localStorage.getItem("multimedia-diaries") || "[]");
+      const diary = diaries.find(d => d.id === id);
+      
+      if (diary) {
+        document.getElementById("time").value = diary.time;
+        document.getElementById("weather").value = diary.weather;
+        document.getElementById("mood").value = diary.mood;
+        document.getElementById("location").value = diary.location;
+        document.getElementById("diary-content").innerHTML = diary.content;
+        
+        // 关闭日记列表
+        document.getElementById("diaryList").classList.remove("show");
+      }
+    }
+
+    function clearDiary() {
+      if (confirm("确定要清空当前日记内容吗？")) {
+        document.getElementById("diary-content").innerHTML = "";
+        document.getElementById("location").value = "";
+        clearCanvas();
+      }
+    }
+
+    function deleteDiary() {
+      const time = document.getElementById("time").value;
+      if (!time) {
+        alert("没有可删除的日记");
+        return;
+      }
+      
+      if (confirm("确定要删除这篇日记吗？")) {
+        const diaries = JSON.parse(localStorage.getItem("multimedia-diaries") || "[]");
+        const updatedDiaries = diaries.filter(d => d.time !== time);
+        
+        localStorage.setItem("multimedia-diaries", JSON.stringify(updatedDiaries));
+        clearDiary();
+        loadDiaryList();
+        alert("日记已删除");
+      }
+    }
+
+    // 日记列表切换
+    document.getElementById("toggleDiaryList").addEventListener("click", function() {
+      document.getElementById("diaryList").classList.toggle("show");
+    });
+
+    // 日记搜索功能
+    document.getElementById("searchDiary").addEventListener("input", function() {
+      const searchTerm = this.value.toLowerCase();
+      const diaryItems = document.querySelectorAll("#saved-diaries li");
+      
+      diaryItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(searchTerm) ? "flex" : "none";
+      });
+    });
+  </script>
+</body>
+</html>
